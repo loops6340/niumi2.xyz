@@ -1,0 +1,94 @@
+<script lang="ts">
+	import FilesList from '$lib/components/FilesList.svelte';
+	import MessageSenderInput from '$lib/components/MessageSenderInput.svelte';
+	import MessagesList from '$lib/components/MessagesList.svelte';
+	import NavBar from '$lib/components/NavBar.svelte';
+	import SendCodeForm from '$lib/components/SendCodeForm.svelte';
+	import type { Message } from '$lib/server/discord-chat';
+	import axios from 'axios';
+
+	let messages = $state<Message[]>([]);
+	let author = $state<string>('anónimo');
+	let lastMessageId = $state<string>('');
+	let isMessagesLoading = $state(true);
+
+	$effect(() => {
+		updateMessages();
+	});
+
+	async function updateMessages() {
+		try {
+			isMessagesLoading = true;
+      const data = await axios('/api/discord-chat');
+			const result = await data.data;
+			messages = result;
+			if (messages) {
+				const lastMessage = messages.at(-1)!;
+				lastMessageId = lastMessage.id;
+			}
+
+			isMessagesLoading = false;
+		} catch {
+			alert("Hubo un error, el máximo de tamaño de archivo subido es de 4.5 mb :'v");
+		}
+	}
+
+	async function updateToPreviousMensajes() {
+		try {
+			isMessagesLoading = true;
+			const data = await fetch(`/api/discord-chat?before=${lastMessageId}`);
+			messages = await data.json();
+			console.log(JSON.stringify(messages));
+			lastMessageId = messages[49].id;
+			isMessagesLoading = false;
+		} catch {
+			alert("Hubo un error, el máximo de tamaño de archivo subido es de 4.5 mb :'v");
+		}
+	}
+	let {data, form} = $props()
+
+	if (data.user) {
+		author = data.user.name
+	}
+
+</script>
+
+<div class="flex h-screen max-h-screen flex-col">
+	<NavBar route="Chat" user={data.user?.name} />
+	<div class="flex min-h-0 flex-1">
+		<SendCodeForm disabled={false} />
+		<div
+			class="relative flex w-full flex-1 flex-col border-l border-black bg-zinc-50 bg-[url(https://i.imgur.com/6qWFlY0.png)] bg-cover md:w-[calc(100%-300px)]"
+		>
+			<div class="flex min-h-0 flex-1">
+				<div class="flex min-h-0 min-w-0 flex-2 flex-col">
+					{#if isMessagesLoading}
+						<!-- <div
+							class="flex h-screen overflow-hidden flex-col-reverse items-center justify-center gap-2 pt-2 pb-2"
+						>
+							<div>Cargando...</div>
+							<img
+								src="https://media.tenor.com/v5aPfSD1VsgAAAAM/goddess-of-victory-nikke-doro-meme-run.gif"
+								alt=""
+							/>
+						</div> -->
+					{:else}
+						<MessagesList
+							{updateMessages}
+							updateToPreviousMessages={updateToPreviousMensajes}
+							messages={messages!}
+						/>
+					{/if}
+            {#if form?.invalid}
+				<div class="flex items-center justify-center bg-red-500 p-2">
+					<p class="font-bold text-white">{form.message}</p>
+				</div>
+			{/if}
+					<MessageSenderInput {author} disabled={false} />
+				</div>
+				<FilesList messages={messages!} />
+			</div>
+			<!-- )} -->
+		</div>
+	</div>
+</div>

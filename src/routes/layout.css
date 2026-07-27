@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap');
+
+@import 'tailwindcss';
+
+@plugin '@tailwindcss/typography';
+
+
+
+@theme inline {
+  --color-background: #140d1b;
+  --color-foreground: #171717;
+  --color-dm-light-primary: #ffe0fc;
+  --color-dm-dark-primary: #140d1b;
+  --color-dm-dark-secondary: #210a28;
+  --color-dm-dark-tertiary: #210a28;
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "League Spartan", sans-serif;
+  font-optical-sizing: auto;
+}
+
+/* width */
+::-webkit-scrollbar {
+  transition: 0.2s;
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: var(--color-dm-dark-primary);
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: var(--color-dm-light-primary);
+  border-radius: 5px;
+}
+::-webkit-scrollbar-corner {
+  background: var(--color-dm-dark-primary);
+
+}
+
