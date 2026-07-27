@@ -7,7 +7,6 @@ export const actions = {
 	sendMessage: async ({ request, cookies }) => {
 		
         const data = await request.formData();
-			console.log("hola")
 
 		try {
             const content = data.get("content") as string
@@ -26,10 +25,10 @@ export const actions = {
           		})
 			}
 
-            sendMessage(content, file, author)
+            await sendMessage(content, file, author)
 		} catch (error) {
 			return fail(422, {
-				description: data.get('Ocurrió un error'),
+				description: 'Ocurrió un error',
 			    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 			    //@ts-expect-error
                 error: error.message
@@ -52,10 +51,10 @@ export const actions = {
 				author = data.name
 			}
 
-            sendCode(content, filename, author || "anonimo")
+            await sendCode(content, filename, author || "anonimo")
 		} catch (error) {
 			return fail(422, {
-				description: data.get('Ocurrió un error'),
+				description: 'Ocurrió un error',
 			    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 			    //@ts-expect-error
                 error: error.message
