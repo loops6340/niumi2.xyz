@@ -11,15 +11,21 @@
 	let author = $state<string>('anónimo');
 	let lastMessageId = $state<string>('');
 	let isMessagesLoading = $state(true);
+	
+	let { data, form } = $props();
 
 	$effect(() => {
 		updateMessages();
+
+		if (data.user) {
+			author = data.user.name;
+		}
 	});
 
 	async function updateMessages() {
 		try {
 			isMessagesLoading = true;
-      const data = await axios('/api/discord-chat');
+			const data = await axios('/api/discord-chat');
 			const result = await data.data;
 			messages = result;
 			if (messages) {
@@ -45,12 +51,6 @@
 			alert("Hubo un error, el máximo de tamaño de archivo subido es de 4.5 mb :'v");
 		}
 	}
-	let {data, form} = $props()
-
-	if (data.user) {
-		author = data.user.name
-	}
-
 </script>
 
 <div class="flex h-screen max-h-screen flex-col">
@@ -63,15 +63,15 @@
 			<div class="flex min-h-0 flex-1">
 				<div class="flex min-h-0 min-w-0 flex-2 flex-col">
 					{#if isMessagesLoading}
-						<!-- <div
-							class="flex h-screen overflow-hidden flex-col-reverse items-center justify-center gap-2 pt-2 pb-2"
+						<div
+							class="flex h-screen flex-col-reverse items-center justify-center gap-2 overflow-hidden pt-2 pb-2"
 						>
 							<div>Cargando...</div>
 							<img
 								src="https://media.tenor.com/v5aPfSD1VsgAAAAM/goddess-of-victory-nikke-doro-meme-run.gif"
 								alt=""
 							/>
-						</div> -->
+						</div>
 					{:else}
 						<MessagesList
 							{updateMessages}
@@ -79,16 +79,15 @@
 							messages={messages!}
 						/>
 					{/if}
-            {#if form?.invalid}
-				<div class="flex items-center justify-center bg-red-500 p-2">
-					<p class="font-bold text-white">{form.message}</p>
-				</div>
-			{/if}
+					{#if form?.invalid}
+						<div class="flex items-center justify-center bg-red-500 p-2">
+							<p class="font-bold text-white">{form.message}</p>
+						</div>
+					{/if}
 					<MessageSenderInput {author} disabled={false} />
 				</div>
 				<FilesList messages={messages!} />
 			</div>
-			<!-- )} -->
 		</div>
 	</div>
 </div>
