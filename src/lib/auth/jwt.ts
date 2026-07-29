@@ -41,7 +41,7 @@ export const getAuthToken = (
 };
 
 export interface JwtPayload {
-  userId: string;
+  id: string;
   iat?: number;
   exp?: number;
 }
@@ -76,7 +76,7 @@ export const verifyToken = (token: string): TokenResponse => {
     return {
       success: true,
       user: {
-        userId: decoded.userId,
+        id: decoded.id,
 
       },
     };
