@@ -78,7 +78,7 @@ export const actions = {
         }
 
         const tokenPayload = {
-          userId: user.id,
+          id: user.id,
           name: user.name,
         };
 		console.log(tokenPayload)
