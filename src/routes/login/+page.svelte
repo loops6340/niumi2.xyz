@@ -5,8 +5,6 @@
 	import LightLink from '$lib/components/UI/LightLink.svelte';
 
 	let { data, form } = $props();
-
-	console.log(form);
 </script>
 
 <div class="text-darkmode-light-primary flex h-screen w-screen flex-col">
