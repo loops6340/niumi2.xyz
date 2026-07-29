@@ -2,7 +2,6 @@
 	import NavBar from "$lib/components/NavBar.svelte";
 	import LightButton from "$lib/components/UI/LightButton.svelte";
     let {data, form} = $props()
-    console.log(form)
 </script>
 
 <div class="text-darkmode-light-primary flex h-screen w-screen flex-col">

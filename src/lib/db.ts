@@ -11,16 +11,8 @@ export async function createUser(
   try {
     // eslint-disable-next-line no-useless-catch
     try {
-      // Step 1: Insert the user in database
 
-      // Step 2: Get the inserted user from database
-    
-
-      // Commit the transaction
-
-            // Return user
       const {data} = await  supabase.from("Users").insert([{name, password}]).select()
-      console.log("marmota", data)
       // if (error) throw new Error()
 
       return data![0] as unknown as { id: string, name: string };
@@ -31,6 +23,18 @@ export async function createUser(
     console.error("Error creating user:", error);
     return null;
   }
+}
+
+interface EditUserDataProps {
+  id: string;
+  name?: string;
+  password?: string;
+  avatarURL?: string;
+}
+
+export async function editUserData(data: EditUserDataProps) {
+      const { error } = await supabase.from("Users").update({ avatar_url: data.avatarURL }).eq("id", data.id)
+      return { error }
 }
 
 export async function getUserByName(name: string) {
@@ -73,7 +77,7 @@ export async function validateUserCredentials(
 
     // Update last login time of the user in database
     // Return user without password
-    return user as unknown as {id: string, name: string};
+    return user as unknown as {id: string, name: string, avatar_url: string};
   } catch (error) {
     console.error("Error validating credentials:", error);
     return null;
