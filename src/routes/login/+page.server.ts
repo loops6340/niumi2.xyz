@@ -14,10 +14,8 @@ export const actions = {
     const name = data.get("name");
     const password = data.get("password");
 
-    // Wrap all registration logic in a separate async function
     const loginUser = async () => {
       try {
-        // Email validation
         if (typeof name !== "string" || !name) {
           return {
             success: false,
@@ -46,10 +44,10 @@ export const actions = {
         }
 
         const tokenPayload = {
-          userId: user!.id,
+          id: user!.id,
           name: user!.name,
+          avatarURL: user!.avatar_url
         };
-
         const accessToken = generateToken(tokenPayload);
         setAuthCookie(cookies, accessToken);
         return { success: true };
@@ -63,11 +61,9 @@ export const actions = {
       }
     };
 
-    // Execute the registration process
     const result = await loginUser();
 
     if (!result.success) {
-      // Map error types to appropriate HTTP status codes and response formats
       switch (result.error) {
         case "user-exists":
           return fail(400, {
@@ -90,7 +86,6 @@ export const actions = {
           return fail(500, { error: true, message: result.message });
       }
     }
-    // Registration succeeded, perform redirect
     throw redirect(302, "/");
   },
 } satisfies Actions;
