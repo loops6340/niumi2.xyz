@@ -1,7 +1,22 @@
+import { getAllUsersData } from '$lib/db.js';
 import { sendCode, sendMessage } from '$lib/server/discord-chat.js';
 import { fail } from '@sveltejs/kit';
 import jwt from 'jsonwebtoken'
 
+export const load = async () => {
+
+	const { data, error } = await getAllUsersData()
+
+	if (error) {
+		return {
+			users: null
+		}
+	}
+
+	return {
+		users: data?.map(user => ({ name: user.name, avatarURL: user.avatar_url }))
+	}
+};
 
 export const actions = {
 	sendMessage: async ({ request, cookies }) => {

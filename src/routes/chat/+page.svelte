@@ -39,7 +39,7 @@
 		}
 	}
 
-	async function updateToPreviousMensajes() {
+	async function updateToPreviousMessages() {
 		try {
 			isMessagesLoading = true;
 			const data = await fetch(`/api/discord-chat?before=${lastMessageId}`);
@@ -54,7 +54,7 @@
 </script>
 
 <div class="flex h-screen max-h-screen flex-col">
-	<NavBar route="Chat" user={data.user?.name} />
+	<NavBar route="Chat" user={data.user?.name} userAvatarURL={data.user?.avatarURL} />
 	<div class="flex min-h-0 flex-1">
 		<SendCodeForm disabled={false} />
 		<div
@@ -75,7 +75,8 @@
 					{:else}
 						<MessagesList
 							{updateMessages}
-							updateToPreviousMessages={updateToPreviousMensajes}
+							users={data.users || []}
+							{updateToPreviousMessages}
 							messages={messages!}
 						/>
 					{/if}

@@ -84,6 +84,10 @@ export async function validateUserCredentials(
   }
 }
 
+export async function getAllUsersData() {
+  const { data, error } = await supabase.from("Users").select()
+  return { data, error }
+}
 // export async function updateLastLogin(
 //   userId: string
 // ) {
