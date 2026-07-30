@@ -33,12 +33,22 @@ export const actions = {
 				const data = jwt.decode(accessToken) as jwt.JwtPayload;
 				author = data.name
 			}
+			
+			if (!content && file.size > 6000000) {
+          		return fail(400, {
+            		invalid: true,
+            		message: "El archivo es muy pesado... (> 6mb)",
+          		})
+			}
+
+
 			if (!content && file.size === 0) {
           		return fail(400, {
             		invalid: true,
             		message: "Debes escribir algo, o mandar algún archivo...",
           		})
 			}
+
 
             await sendMessage(content, file, author)
 		} catch (error) {
