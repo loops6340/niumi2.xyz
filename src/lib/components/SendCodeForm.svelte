@@ -12,7 +12,7 @@
         <h1>Enviar codigo xd</h1>
         <form method="POST" action="?/sendCode" class="flex flex-col gap-2" >
           <input required type="text" name="filename" class="focus:outline-0 border dark:text-dm-dark-primary dark:bg-dm-light-primary p-2" placeholder="nombre del archivo" />
-          <textarea spellCheck={false} disabled={disabled} required name="content" id="contenido" class="p-2 dark:bg-dm-dark-secondary border border-dm-light-primary focus:outline-0 w-full h-96 " placeholder="escribir codigo"></textarea>
+          <textarea spellCheck={false} disabled={disabled} required name="content" id="contenido" class="p-2 dark:bg-dm-dark-secondary border border-dm-light-primary focus:outline-0 w-full h-82 " placeholder="escribir codigo"></textarea>
           <LightButton>Enviar</LightButton>
         </form>
       </div>
