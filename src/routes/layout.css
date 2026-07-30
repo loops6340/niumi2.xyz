@@ -7,6 +7,9 @@
 
 
 @theme inline {
+  --breakpoint-fhd: 102rem;
+  --breakpoint-xxl: 83rem;
+
   --color-background: #140d1b;
   --color-foreground: #171717;
   --color-dm-light-primary: #ffe0fc;

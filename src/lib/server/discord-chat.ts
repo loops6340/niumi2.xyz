@@ -5,6 +5,7 @@ import { Routes } from 'discord-api-types/v10';
 import { TOKEN, CHANNEL_ID } from '$env/static/private';
 
 export interface Message {
+	pending: boolean;
 	type: number;
 	content: string;
 	mentions: unknown[];

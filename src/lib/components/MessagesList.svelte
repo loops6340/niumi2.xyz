@@ -1,59 +1,75 @@
 <script lang="ts">
-	import { BsChevronDoubleDown, BsChevronUp } from 'svelte-icons-pack/bs';
+	import { BsCheckAll, BsChevronDoubleDown, BsChevronUp } from 'svelte-icons-pack/bs';
 	import { Icon } from 'svelte-icons-pack';
 	import DarkButton from './UI/DarkButton.svelte';
 	import type { Message } from '$lib/server/discord-chat';
 	import ChatFile from './ChatFile.svelte';
 	import { extensionImages, showableFileExtensions } from '$lib/constants';
 	import { fade } from 'svelte/transition';
+	import { OiStopwatch16 } from 'svelte-icons-pack/oi';
 
 	interface Props {
 		messages: Message[];
 		users: { name: string; avatarURL: string }[];
-		updateToPreviousMessages: () => void;
-		updateMessages: () => void;
+		updateToPreviousMessages: () => Promise<void>;
+		updateMessages: () => Promise<void>;
+		changeMessagesLoadingState: () => void;
 	}
 
 	const noMessageRegex = /^\{([^}]+)\}/;
 
 	const regex = /^\{([^}]+)\}:(.+)$/;
 
-	let { messages, updateMessages, updateToPreviousMessages, users }: Props = $props();
+	let {
+		messages,
+		updateMessages,
+		updateToPreviousMessages,
+		users,
+		changeMessagesLoadingState
+	}: Props = $props();
 </script>
 
 <div
 	transition:fade
 	class="flex min-h-0 flex-1 flex-col-reverse items-start gap-2 overflow-auto pt-2 pb-2"
 >
-	<div class="absolute right-3 bottom-18 flex flex-col gap-2 md:right-90 2xl:right-120">
-		<DarkButton class="z-5" onclick={updateToPreviousMessages}>
+	<div class="absolute right-3 bottom-18 flex flex-col gap-2 md:right-90 xxl:right-110 2xl:right-120 fhd:right-150">
+		<DarkButton
+			class="z-5"
+			onclick={async () => {
+				changeMessagesLoadingState();
+				await updateToPreviousMessages();
+				changeMessagesLoadingState();
+			}}
+		>
 			<Icon src={BsChevronUp} />
 		</DarkButton>
 
-		<DarkButton onclick={updateMessages} class="z-50">
+		<DarkButton
+			onclick={async () => {
+				changeMessagesLoadingState();
+				await updateMessages();
+				changeMessagesLoadingState();
+			}}
+			class="z-50"
+		>
 			<Icon src={BsChevronDoubleDown} />
 		</DarkButton>
 	</div>
 	{#each messages as message, index (index)}
 		{#if message.content || message.attachments[0]?.url}
 			<div class="flex max-w-full items-start gap-2 pl-2">
-				{#if message.author.id !== '1073726760350392340'}
+				{#if message.content.match(noMessageRegex) && users.find((u) => u.name === message.content.match(noMessageRegex)?.[1])?.avatarURL}
 					<img
-						class="h-12.5 w-12.5 border border-black"
-						src={`https://cdn.discordapp.com/avatars/${message.author.id}/${message.author.avatar}.png`}
+						class="h-12.5 w-12.5 rounded-full border border-dm-dark-primary object-cover"
+						src={users.find((u) => u.name === message.content.match(noMessageRegex)?.[1].trim())!
+							.avatarURL!}
 						alt=""
 					/>
 				{:else}
-					{#if message.content.match(regex) && users.find((u) => u.name === message.content.match(regex)![1])?.avatarURL}
-						<img
-							class="rounded-full h-12.5 w-12.5 border border-dm-dark-primary object-cover"
-							src={users.find((u) => u.name === message.content.match(regex)![1].trim())!
-								.avatarURL!}
-							alt=""
-						/>
-					{:else}
-						<div class="rounded-full  h-12.5 w-12.5 min-w-12.5 border border-dm-dark-primary bg-fuchsia-200"></div>
-					{/if}
+					<div
+						class="h-12.5 w-12.5 min-w-12.5 rounded-full border border-dm-dark-primary bg-fuchsia-200"
+					></div>
 				{/if}
 
 				<div
@@ -67,9 +83,25 @@
 						{/if}
 					</div>
 
-					<div class="md:max-w-200">
-						{#if !message.attachments[0]}
-							{message.content.match(regex) ? message.content.match(regex)![2] : message.content}
+					<div class="flex items-center gap-2 md:max-w-200">
+						{#if message.attachments[0]}
+							<div>
+								{message.content.match(regex)
+									? message.content.match(regex)![2]
+									: message.content.match(noMessageRegex)
+										? ''
+										: message.content}
+							</div>
+						{:else}
+							{message.content.match(regex)?.[2] || message.content}
+						{/if}
+
+						{#if message.content.match(regex)}
+							{#if message.pending}
+								<Icon size={13} src={OiStopwatch16} />
+							{:else}
+								<Icon src={BsCheckAll} />
+							{/if}
 						{/if}
 					</div>
 					{#if message.attachments[0]}
@@ -91,6 +123,10 @@
 									<div class="text-dm-light-primary">{message.attachments[0].filename}</div>
 								</a>
 							</div>
+						{/if}
+
+						{#if !message.content.match(regex)}
+							<Icon className="mt-2 ml-auto" src={BsCheckAll} />
 						{/if}
 					{/if}
 				</div>

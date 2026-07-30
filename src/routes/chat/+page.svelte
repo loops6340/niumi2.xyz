@@ -10,8 +10,8 @@
 	let messages = $state<Message[]>([]);
 	let author = $state<string>('anónimo');
 	let lastMessageId = $state<string>('');
-	let isMessagesLoading = $state(true);
-	
+	let isMessagesLoading = $state(false);
+
 	let { data, form } = $props();
 
 	$effect(() => {
@@ -24,7 +24,6 @@
 
 	async function updateMessages() {
 		try {
-			isMessagesLoading = true;
 			const data = await axios('/api/discord-chat');
 			const result = await data.data;
 			messages = result;
@@ -32,8 +31,6 @@
 				const lastMessage = messages.at(-1)!;
 				lastMessageId = lastMessage.id;
 			}
-
-			isMessagesLoading = false;
 		} catch {
 			alert("Hubo un error, el máximo de tamaño de archivo subido es de 4.5 mb :'v");
 		}
@@ -41,15 +38,54 @@
 
 	async function updateToPreviousMessages() {
 		try {
-			isMessagesLoading = true;
 			const data = await fetch(`/api/discord-chat?before=${lastMessageId}`);
 			messages = await data.json();
-			console.log(JSON.stringify(messages));
 			lastMessageId = messages[49].id;
-			isMessagesLoading = false;
 		} catch {
 			alert("Hubo un error, el máximo de tamaño de archivo subido es de 4.5 mb :'v");
 		}
+	}
+
+	function changeMessagesLoadingState() {
+		isMessagesLoading = !isMessagesLoading;
+	}
+
+	function createMessage(user: { author: string; content: string }) {
+		return {
+			author: {
+				username: '',
+				id: '',
+				avatar: '',
+				discriminator: '',
+				public_flags: 0,
+				flags: 0,
+				banner: null,
+				accent_color: null,
+				global_name: null,
+				avatar_decoration_data: null,
+				collectibles: null,
+				display_name_styles: null,
+				banner_color: null,
+				clan: null,
+				primary_guild: null
+			},
+			content: `{${user.author}}: ${user.content}`,
+			type: 0,
+			mentions: [],
+			mention_roles: [],
+			attachments: [],
+			embeds: [],
+			timestamp: '',
+			edited_timestamp: null,
+			flags: 0,
+			components: [],
+			id: '',
+			channel_id: '',
+			pinned: false,
+			mention_everyone: false,
+			tts: false,
+			pending: true
+		};
 	}
 </script>
 
@@ -78,6 +114,7 @@
 							users={data.users || []}
 							{updateToPreviousMessages}
 							messages={messages!}
+							{changeMessagesLoadingState}
 						/>
 					{/if}
 					{#if form?.invalid}
@@ -85,7 +122,15 @@
 							<p class="font-bold text-white">{form.message}</p>
 						</div>
 					{/if}
-					<MessageSenderInput {author} disabled={false} />
+					<MessageSenderInput
+						{author}
+						{updateMessages}
+						disabled={false}
+						onsubmit={(u) => {
+							messages.reverse().push(createMessage(u));
+							messages.reverse();
+						}}
+					/>
 				</div>
 				<FilesList messages={messages!} />
 			</div>
