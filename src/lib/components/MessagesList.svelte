@@ -82,7 +82,7 @@
 							{message.content.match(regex) ? message.content.match(regex)![1] : 'Anónimo'}
 						{/if}
 					</div>
-
+					<!-- Esto es un desastre -->
 					<div class="flex items-center gap-2 md:max-w-200">
 						{#if message.attachments[0]}
 							<div>
@@ -96,7 +96,7 @@
 							{message.content.match(regex)?.[2] || message.content}
 						{/if}
 
-						{#if message.content.match(regex)}
+						{#if message.content.match(regex) || !message.content.startsWith("{")}
 							{#if message.pending}
 								<Icon size={13} src={OiStopwatch16} />
 							{:else}
