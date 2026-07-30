@@ -77,7 +77,7 @@
 		/>
 		<label
 			for="file-upload"
-			class="flex cursor-pointer items-center border-r border-l p-2 dark:bg-dm-light-primary"
+			class="flex cursor-pointer items-center border-r border-l p-2 bg-dm-light-primary"
 		>
 			<Icon src={BsFileEarmarkPlusFill} />
 		</label>
@@ -96,7 +96,7 @@
 			{disabled}
 			type="text"
 			name="content"
-			class="w-full p-2 focus:outline-0 dark:bg-dm-light-primary"
+			class="w-full p-2 focus:outline-0 bg-dm-light-primary"
 		/>
 		<DarkButton notRounded class="flex w-20 items-center text-[20px]">
 			<Icon src={AiOutlineSend} className="ml-auto mr-auto" />

@@ -23,7 +23,7 @@
 	};
 </script>
 
-<div class="hidden min-h-0 flex-1 flex-col gap-2 overflow-auto p-2 md:flex dark:bg-dm-dark-primary">
+<div class="hidden min-h-0 flex-1 flex-col gap-2 overflow-auto p-2 md:flex bg-dm-dark-primary">
 	{#each filteredMessages as message, index (index)}
 		{@const instant = Temporal.Instant.from(message.timestamp)}
 		{@const zoned = instant.toZonedDateTimeISO(Temporal.Now.timeZoneId())}
@@ -35,9 +35,9 @@
 		{@const ampm = zoned.hour >= 12 ? 'pm' : 'am'}
 		{@const formatted = `${dd}/${mm}/${yy} ${hour}:${minute}${ampm}`}
 		<div
-			class="flex min-w-70 flex-col gap-2 p-2 dark:bg-dm-dark-secondary dark:text-dm-light-primary"
+			class="flex min-w-70 flex-col gap-2 p-2 bg-dm-dark-secondary text-dm-light-primary"
 		>
-			<div class="flex items-center gap-2 border-b p-2 dark:border-b-dm-light-primary">
+			<div class="flex items-center gap-2 border-b p-2 border-b-dm-light-primary">
 				<a class="flex w-full items-center gap-5" href={message.attachments[0].url} rel="external">
 					<img
 						src={extensionImages.find((ex) => message.attachments[0].url.includes(ex.name))
@@ -50,7 +50,7 @@
 				{#if showableFileExtensions.some((f) => message.attachments[0].url.includes(f))}
 					<button
 						onclick={() => showCodeMirrorWindow(message.attachments[0].url)}
-						class="dark ml-auto cursor-pointer rounded-full border p-1 text-[20px] dark:bg-dm-light-primary dark:text-dm-dark-primary"
+						class="dark ml-auto cursor-pointer rounded-full border p-1 text-[20px] bg-dm-light-primary text-dm-dark-primary"
 					>
 						<Icon src={AiFillEye} color="var(--color-dm-dark-primary)" size={20} />
 					</button>
@@ -62,7 +62,7 @@
 
 	{#if showWindow}
 		<div
-			class="fixed top-1/2 left-1/2 flex translate-x-[-50%] translate-y-[-50%] flex-col gap-2 bg-dm-dark-primary p-6 dark:text-dm-light-primary"
+			class="fixed top-1/2 left-1/2 flex translate-x-[-50%] translate-y-[-50%] flex-col gap-2 bg-dm-dark-primary p-6 text-dm-light-primary"
 		>
 			<div class="flex">
 				<h1>Codigo</h1>

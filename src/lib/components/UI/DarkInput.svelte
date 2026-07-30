@@ -11,5 +11,5 @@
 <input
     {...props}
     class={`
-    dark:text-dm-light-primary border-0 focus:outline-0 ${props.notRounded ? "" : "rounded"} dark:bg-background p-2 transition-[0.2s] dark:hover:bg-dm-light-primary dark:hover:text-dm-dark-primary cursor-pointer ${props.class}`}
+    text-dm-light-primary border-0 focus:outline-0 ${props.notRounded ? "" : "rounded"} bg-background p-2 transition-[0.2s] hover:bg-dm-light-primary hover:text-dm-dark-primary cursor-pointer ${props.class}`}
 >

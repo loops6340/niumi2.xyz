@@ -73,7 +73,7 @@
 				{/if}
 
 				<div
-					class="flex flex-col rounded border border-black p-2 dark:bg-dm-dark-primary dark:text-dm-light-primary"
+					class="flex flex-col rounded border border-black p-2 bg-dm-dark-primary text-dm-light-primary"
 				>
 					<div class="font-bold md:max-w-200">
 						{#if message.content.match(noMessageRegex)}
