@@ -3,6 +3,8 @@
 	import { resolve } from '$app/paths';
 	import NavBar from '$lib/components/NavBar.svelte';
 	import LightButton from '$lib/components/UI/LightButton.svelte';
+	import { Icon } from 'svelte-icons-pack';
+	import { RiSystemUpload2Fill } from 'svelte-icons-pack/ri';
 	let { data, form } = $props();
 	let fileInput: HTMLInputElement;
 	let avatar = $derived(data.user?.avatarURL);
@@ -50,14 +52,23 @@
                         required
 						id=""
 					/>
+					<!-- svelte-ignore a11y_click_events_have_key_events -->
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
 					<div
 						onclick={() => {
 							fileInput.click();
 						}}
-						class="my-auto h-35 w-35 rounded-full bg-dm-light-primary"
+						class="relative my-auto h-35 w-35 rounded-full bg-dm-light-primary cursor-pointer"
 					>
 						{#if avatar}
+							<span class="absolute bg-dm-light-primary flex items-center w-full h-full rounded-full opacity-0 hover:opacity-100 hover:z-5 transition">
+								<Icon size={40} src={RiSystemUpload2Fill} className="mx-auto"/>
+							</span>
 							<img class="h-35 w-35 rounded-full object-cover" src={avatar} alt="" />
+						{:else}
+							<span class="absolute bg-dm-light-primary flex items-center w-full h-full rounded-full transition">
+								<Icon size={40} src={RiSystemUpload2Fill} className="mx-auto"/>
+							</span>
 						{/if}
 					</div>
 				</div>
