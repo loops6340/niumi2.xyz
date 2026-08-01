@@ -96,7 +96,7 @@
 							{message.content.match(regex)?.[2] || message.content}
 						{/if}
 
-						{#if message.content.match(regex) || !message.content.startsWith("{")}
+						{#if (message.content.match(regex) || !message.content.startsWith("{")) && message.content !== ""}
 							{#if message.pending}
 								<Icon size={13} src={OiStopwatch16} />
 							{:else}
