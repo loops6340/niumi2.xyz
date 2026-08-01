@@ -8,7 +8,7 @@
 	import axios from 'axios';
 
 	let messages = $state<Message[]>([]);
-	let author = $state<string>('anónimo');
+	let author = $state<string>('Anónimo');
 	let lastMessageId = $state<string>('');
 	let isMessagesLoading = $state(false);
 
