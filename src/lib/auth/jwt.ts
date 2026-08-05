@@ -54,7 +54,7 @@ interface TokenResponse {
 }
 
 
-const ACCESS_TOKEN_EXPIRY = "1h"; // 1 hour
+const ACCESS_TOKEN_EXPIRY = "24h"; // 1 hour
 
 /**
  * Generate a JWT token for a user
