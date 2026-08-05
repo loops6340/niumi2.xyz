@@ -1,15 +1,14 @@
 <script>
 	import { resolve } from '$app/paths';
-	import NavBar from '$lib/components/NavBar.svelte';
+	import NiumiPanelInfo from '$lib/components/NiumiPanelInfo.svelte';
 	import LightButton from '$lib/components/UI/LightButton.svelte';
 	import LightLink from '$lib/components/UI/LightLink.svelte';
 
 	let { data, form } = $props();
 </script>
 
-<div class="text-darkmode-light-primary flex h-screen w-screen flex-col">
-	<NavBar route="Login" user={data.user?.name} userAvatarURL={data.user?.avatarURL} />
-
+<div class="text-darkmode-light-primary flex h-screen w-screen">
+	<NiumiPanelInfo user={data.user?.name} userAvatarURL={data.user?.avatarURL} />
 	<div
 		class="mt-auto mb-auto flex h-full flex-1 flex-col items-center gap-5 bg-[url(https://i.imgur.com/3N0gyAY.png)] bg-cover"
 	>

@@ -26,7 +26,7 @@ export interface Message {
 
 export interface Author {
 	id: string;
-	username: string;
+	username?: string;
 	avatar: string;
 	discriminator: string;
 	public_flags: number;

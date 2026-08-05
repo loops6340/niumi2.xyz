@@ -2,10 +2,13 @@
 	import FilesList from '$lib/components/FilesList.svelte';
 	import MessageSenderInput from '$lib/components/MessageSenderInput.svelte';
 	import MessagesList from '$lib/components/MessagesList.svelte';
-	import NavBar from '$lib/components/NavBar.svelte';
-	import SendCodeForm from '$lib/components/SendCodeForm.svelte';
+	// import NavBar from '$lib/components/NavBar.svelte';
+	// import SendCodeForm from '$lib/components/SendCodeForm.svelte';
 	import type { Message } from '$lib/server/discord-chat';
 	import axios from 'axios';
+	import NiumiPanelInfo from '$lib/components/NiumiPanelInfo.svelte';
+	import ChatChannels from '$lib/components/ChatChannels.svelte';
+	import ChatInfoPanel from '$lib/components/ChatInfoPanel.svelte';
 
 	let messages = $state<Message[]>([]);
 	let author = $state<string>('Anónimo');
@@ -13,19 +16,42 @@
 	let isMessagesLoading = $state(false);
 
 	let { data, form } = $props();
+	const noMessageRegex = /^\{([^}]+)\}/;
+
+	const regex = /^\{([^}]+)\}:(.+)$/;
 
 	$effect(() => {
 		updateMessages();
+		// $inspect(messages)
 
 		if (data.user) {
 			author = data.user.name;
 		}
 	});
 
+	function parseMessages(messages: Message[]) {
+		return messages.map((message) => {
+			const isAnonymous = !message.content.startsWith('{') && !message.content.includes('}');
+
+			if (isAnonymous) {
+				message.author.username = undefined;
+
+				// messages[i].author.username = undefined;
+			} else {
+				const authorName =
+					message.content.match(regex)?.[1] || message.content.match(noMessageRegex)?.[1];
+				message.author.username = authorName;
+				message.content = message.content.slice(message.author!.username!.length + 4);
+			}
+			return message
+		});
+	}
+
 	async function updateMessages() {
 		try {
 			const data = await axios('/api/discord-chat');
-			const result = await data.data;
+			let result = await data.data;
+			result = parseMessages(result);
 			messages = result;
 			if (messages) {
 				const lastMessage = messages.at(-1)!;
@@ -39,7 +65,9 @@
 	async function updateToPreviousMessages() {
 		try {
 			const data = await fetch(`/api/discord-chat?before=${lastMessageId}`);
-			messages = await data.json();
+
+			messages = parseMessages(await data.json());
+
 			lastMessageId = messages[49].id;
 		} catch {
 			alert("Hubo un error, el máximo de tamaño de archivo subido es de 4.5 mb :'v");
@@ -53,7 +81,7 @@
 	function createMessage(user: { author: string; content: string }) {
 		return {
 			author: {
-				username: '',
+				username: user.author,
 				id: '',
 				avatar: '',
 				discriminator: '',
@@ -69,13 +97,13 @@
 				clan: null,
 				primary_guild: null
 			},
-			content: `{${user.author}}: ${user.content}`,
+			content: user.content,
 			type: 0,
 			mentions: [],
 			mention_roles: [],
 			attachments: [],
 			embeds: [],
-			timestamp: '',
+			timestamp: Temporal.Now.plainDateTimeISO(Intl.DateTimeFormat().resolvedOptions().timeZone).toString(),
 			edited_timestamp: null,
 			flags: 0,
 			components: [],
@@ -89,14 +117,17 @@
 	}
 </script>
 
-<div class="flex h-screen max-h-screen flex-col">
-	<NavBar route="Chat" user={data.user?.name} userAvatarURL={data.user?.avatarURL} />
+<div class="flex h-screen max-h-screen w-screen max-w-screen flex-col">
+	<!-- <NavBar route="Chat" user={data.user?.name} userAvatarURL={data.user?.avatarURL} /> -->
 	<div class="flex min-h-0 flex-1">
-		<SendCodeForm disabled={false} />
+		<NiumiPanelInfo user={data.user?.name} userAvatarURL={data.user?.avatarURL} />
+		<ChatChannels lastMessage={messages[0]} />
+		<!-- <SendCodeForm disabled={false} /> -->
 		<div
-			class="relative flex w-full flex-1 flex-col border-l border-black bg-zinc-50 bg-[url(https://i.imgur.com/6qWFlY0.png)] bg-cover md:w-[calc(100%-300px)]"
+			class="relative flex w-full flex-1 flex-col border-l border-black bg-zinc-50 bg-[url(https://i.imgur.com/6qWFlY0.png)] bg-cover md:w-[calc(100%-400px)]"
 		>
-			<div class="flex min-h-0 flex-1">
+			<ChatInfoPanel />
+			<div class="flex min-h-0 min-w-0 flex-1">
 				<div class="flex min-h-0 min-w-0 flex-2 flex-col">
 					{#if isMessagesLoading}
 						<div

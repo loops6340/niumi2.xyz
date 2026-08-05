@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { refreshAll, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import NavBar from '$lib/components/NavBar.svelte';
+	import NiumiPanelInfo from '$lib/components/NiumiPanelInfo.svelte';
 	import LightButton from '$lib/components/UI/LightButton.svelte';
 	import { Icon } from 'svelte-icons-pack';
 	import { RiSystemUpload2Fill } from 'svelte-icons-pack/ri';
@@ -16,8 +16,9 @@
 	};
 </script>
 
-<div class="flex h-screen w-screen flex-col">
-	<NavBar route="Perfil" user={data.user?.name} userAvatarURL={data.user?.avatarURL} />
+<div class="flex h-screen w-screen">
+	<!-- <NavBar route="Perfil" user={data.user?.name} userAvatarURL={data.user?.avatarURL} /> -->
+	<NiumiPanelInfo user={data.user?.name} userAvatarURL={data.user?.avatarURL} />
 
 	<div
 		class="mt-auto mb-auto flex h-full flex-1 flex-col items-center gap-5 bg-[url(https://i.imgur.com/3N0gyAY.png)] bg-cover"

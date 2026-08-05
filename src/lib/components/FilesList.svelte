@@ -4,6 +4,7 @@
 	import ChatFile from './ChatFile.svelte';
 	import { Icon } from 'svelte-icons-pack';
 	import { extensionImages, showableFileExtensions } from '$lib/constants';
+	import UIWindow from './UI/UIWindow.svelte';
 
 
 	interface Props {
@@ -35,7 +36,7 @@
 		{@const ampm = zoned.hour >= 12 ? 'pm' : 'am'}
 		{@const formatted = `${dd}/${mm}/${yy} ${hour}:${minute}${ampm}`}
 		<div
-			class="flex min-w-70 flex-col gap-2 p-2 bg-dm-dark-secondary text-dm-light-primary"
+			class="flex min-w-10 flex-col gap-2 p-2 bg-dm-dark-secondary text-dm-light-primary"
 		>
 			<div class="flex items-center gap-2 border-b p-2 border-b-dm-light-primary">
 				<a class="flex w-full items-center gap-5" href={message.attachments[0].url} rel="external">
@@ -61,14 +62,8 @@
 	{/each}
 
 	{#if showWindow}
-		<div
-			class="fixed top-1/2 left-1/2 flex translate-x-[-50%] translate-y-[-50%] flex-col gap-2 bg-dm-dark-primary p-6 text-dm-light-primary"
-		>
-			<div class="flex">
-				<h1>Codigo</h1>
-				<button class="ml-auto" onclick={() => (showWindow = false)}>X</button>
-			</div>
+		<UIWindow title="Archivo" onclose={() => (showWindow = false)}>
 			<ChatFile url={codeURL} />
-		</div>
+		</UIWindow>
 	{/if}
 </div>

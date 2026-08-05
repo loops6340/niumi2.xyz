@@ -16,8 +16,6 @@
 		changeMessagesLoadingState: () => void;
 	}
 
-	const noMessageRegex = /^\{([^}]+)\}/;
-
 	const regex = /^\{([^}]+)\}:(.+)$/;
 
 	let {
@@ -27,13 +25,16 @@
 		users,
 		changeMessagesLoadingState
 	}: Props = $props();
+
 </script>
 
 <div
 	transition:fade
-	class="flex min-h-0 flex-1 flex-col-reverse items-start gap-2 overflow-auto pt-2 pb-2"
+	class="flex min-h-0 min-w-0 flex-1 flex-col-reverse items-start gap-1 overflow-auto pt-2 pb-2"
 >
-	<div class="absolute right-3 bottom-18 flex flex-col gap-2 md:right-90 xxl:right-110 2xl:right-120 fhd:right-150">
+	<div
+		class="absolute right-3 bottom-18 flex flex-col gap-2 md:right-90 xxl:right-110 2xl:right-120 fhd:right-150"
+	>
 		<DarkButton
 			class="z-5"
 			onclick={async () => {
@@ -57,46 +58,54 @@
 		</DarkButton>
 	</div>
 	{#each messages as message, index (index)}
+		{@const date = Temporal.Instant.from(message.timestamp)
+			.toZonedDateTimeISO(Intl.DateTimeFormat().resolvedOptions().timeZone)}
 		{#if message.content || message.attachments[0]?.url}
-			<div class="flex max-w-full items-start gap-2 pl-2">
-				{#if message.content.match(noMessageRegex) && users.find((u) => u.name === message.content.match(noMessageRegex)?.[1])?.avatarURL}
-					<img
-						class="h-12.5 w-12.5 rounded-full border border-dm-dark-primary object-cover"
-						src={users.find((u) => u.name === message.content.match(noMessageRegex)?.[1].trim())!
-							.avatarURL!}
-						alt=""
-					/>
-				{:else}
-					<div
-						class="h-12.5 w-12.5 min-w-12.5 rounded-full border border-dm-dark-primary bg-fuchsia-200"
-					></div>
+			{console.log(message.content, message.author?.username)}
+
+			<div class="flex gap-1 hover:[&>span]:opacity-50">
+				{#if index !== messages.length - 1}
+					{#if message.author.username == undefined || message.author.username !== messages[index + 1].author.username || (new Date(message.timestamp).getTime() - 1000 * 60 * 4 > new Date(messages[index + 1].timestamp).getTime())}
+						{#if users.find((u) => u.name === message.author.username)?.avatarURL}
+							<img
+								class="h-12.5 w-12.5 rounded-full border border-dm-dark-primary object-cover"
+								src={users.find((u) => u.name === message.author.username)!.avatarURL || ''}
+								alt=""
+							/>
+						{:else}
+							<div
+								class=" h-12.5 w-12.5 rounded-full border border-dm-dark-primary bg-dm-light-primary object-cover"
+							></div>
+						{/if}
+					{:else}
+						<span class="w-12.5 rounded border bg-dm-dark-primary opacity-0 font-normal text-dm-light-primary text-[10px] flex items-center transition">
+							<span class="mx-auto">
+								{date.hour}:{date.minute}{date.hour > 11 ? 'pm' : 'am'}
+							</span>
+						</span>
+					{/if}
 				{/if}
 
 				<div
-					class="flex flex-col rounded border border-black p-2 bg-dm-dark-primary text-dm-light-primary"
+					class="flex flex-col rounded border border-black bg-dm-dark-primary p-2 text-dm-light-primary"
 				>
 					<div class="font-bold md:max-w-200">
-						{#if message.content.match(noMessageRegex)}
-							{message.content.match(noMessageRegex)![1]}
-						{:else}
-							{message.content.match(regex) ? message.content.match(regex)![1] : 'Anónimo'}
+						{#if index !== messages.length - 1}
+						{#if message.author.username == undefined || message.author.username !== messages[index + 1].author.username || (new Date(message.timestamp).getTime() - 1000 * 60 * 4 > new Date(messages[index + 1].timestamp).getTime())}
+
+								{message.author.username || 'Anónimo'}
+								<span class="text-[10px] font-normal">
+									{date.hour}:{date.minute}{date.hour > 11 ? 'pm' : 'am'}
+								</span>
+							{/if}
 						{/if}
 					</div>
-					<!-- Esto es un desastre -->
 					<div class="flex items-center gap-2 md:max-w-200">
-						{#if message.attachments[0]}
-							<div>
-								{message.content.match(regex)
-									? message.content.match(regex)![2]
-									: message.content.match(noMessageRegex)
-										? ''
-										: message.content}
-							</div>
-						{:else}
-							{message.content.match(regex)?.[2] || message.content}
-						{/if}
+						<div>
+							{message.content}
+						</div>
 
-						{#if (message.content.match(regex) || !message.content.startsWith("{")) && message.content !== ""}
+						{#if message.content}
 							{#if message.pending}
 								<Icon size={13} src={OiStopwatch16} />
 							{:else}
