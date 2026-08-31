@@ -1,21 +1,13 @@
 import { fail, redirect } from "@sveltejs/kit";
-import {
-  generateToken,
-  setAuthCookie,
-} from "$lib/auth/jwt";
-
-
-import bcrypt from "bcrypt";
 import type { Actions } from "./$types";
-import { createUser, getUserByName } from "$lib/db";
+import { UserService } from "$lib/db/UserService";
 
 export const actions = {
-  register: async ({ cookies, request }) => {
+  register: async ({ request, locals }) => {
     const data = await request.formData();
     const name = data.get("name");
     const password = data.get("password");
 
-    // Wrap all registration logic in a separate async function
     const registerUser = async () => {
       try {
         // Email validation
@@ -37,6 +29,8 @@ export const actions = {
         //   };
         // }
 
+        
+
         // Password validation
         if (typeof password !== "string" || password.length < 6) {
           return {
@@ -45,46 +39,18 @@ export const actions = {
             message: "La contraseña debe tener al menos 6 caracteres :'v",
           };
         }
+          const userService = new UserService(locals.supabase)
 
-        // Check if user already exists
-        const existingUser = await getUserByName(name);
-        if (existingUser) {
-          return {
-            success: false,
-            error: "user-exists",
-            message: "Una cuenta con este nombre ya existe",
-          };
-        }
+          const { error } = await userService.registerUser(name, password)
 
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(
-          password,
-          saltRounds
-        );
+          if (error) {
+            return {
+              success: false,
+              error: "user-exists",
+              message: "Una cuenta con este nombre ya existe",
+            };
+          }
 
-        const user = await createUser(
-          name,
-          hashedPassword,
-        );
-
-        console.log("User Created");
-
-        if (!user) {
-          return {
-            success: false,
-            error: "database-error",
-            message: "Failed to create account - database error",
-          };
-        }
-
-        const tokenPayload = {
-          id: user.id,
-          name: user.name,
-        };
-		console.log(tokenPayload)
-        const accessToken = generateToken(tokenPayload);
-
-        setAuthCookie(cookies, accessToken);
         return { success: true };
       } catch (error) {
         console.error("Registration error:", error);
@@ -96,11 +62,9 @@ export const actions = {
       }
     };
 
-    // Execute the registration process
     const result = await registerUser();
 
     if (!result.success) {
-      // Map error types to appropriate HTTP status codes and response formats
       switch (result.error) {
         case "user-exists":
           return fail(400, {
@@ -123,7 +87,6 @@ export const actions = {
           return fail(500, { error: true, message: result.message });
       }
     }
-    // Registration succeeded, perform redirect
     throw redirect(302, "/");
   },
 } satisfies Actions;

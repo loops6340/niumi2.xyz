@@ -4,18 +4,18 @@
 
 	import { Icon } from 'svelte-icons-pack';
 	import DarkButton from './UI/DarkButton.svelte';
-	import { applyAction, enhance } from '$app/forms';
 	import LightButton from './UI/LightButton.svelte';
 	import UIWindow from './UI/UIWindow.svelte';
+	import ChatStore, { messages } from '$lib/stores/chat.store';
+	import type { User } from '$lib/db/ChatService';
+
 
 	interface Props {
-		author: string;
 		disabled: boolean;
-		onsubmit: (user: { author: string; content: string }) => void;
-		updateMessages: () => Promise<void>;
+		user: User;
 	}
 
-	let { author, disabled, onsubmit, updateMessages }: Props = $props();
+	let { disabled, user }: Props = $props();
 	let selectedFileName = $state<string>('');
 
 	let showCodeForm = $state<boolean>(false);
@@ -26,9 +26,7 @@
 		window.addEventListener('drop', (e) => {
 			if ([...e!.dataTransfer!.items].some((item) => item.kind === 'file')) {
 				e.preventDefault();
-				// console.log(fileInput.files)
 				fileInput.files = e!.dataTransfer!.files;
-				console.log(fileInput.files);
 				selectedFileName = fileInput.files[0].name;
 			}
 		});
@@ -40,6 +38,60 @@
 			}
 		});
 	});
+
+	async function handleSubmit(event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement}) {
+			event.preventDefault();
+			const formData = new FormData(event.currentTarget, event.submitter);
+			const file =  formData.get('file') as File;
+			const content = formData.get('content') as string;
+
+			textInput.value = '';
+			fileInput.value = '';
+			selectedFileName = '';
+
+			const id = crypto.randomUUID();
+			
+			const chatStore = new ChatStore()
+			const now = Temporal.Now.plainDateTimeISO(Intl.DateTimeFormat().resolvedOptions().timeZone).toString() + "+00:00"
+			
+			chatStore.messages.unshift({
+				content,
+				id,
+				created_at: now,
+				user: {
+					id: user.id,
+					name: user.name,
+					avatar_url: user.avatar_url,
+					created_at: user.created_at
+				},
+				attachments: file.size > 0 ? [{ id: 0, filename: file.name, url: "..."}] : [],
+				pending: true,
+			});
+			const result = await fetch("/api/messages", {
+				method: "POST",
+				body: formData,
+			})
+		
+			const json = await result.json()
+			console.log(json.data, "JSON DATA")
+			chatStore.messages.set($messages.findIndex(msg => msg.id === id), {
+				id: json.id,
+				created_at: now,
+				content,
+				user,
+				attachments: file.size > 0 ? [
+					{ 
+						filename: file.name, 
+						url: json.attachments[0].url,
+						id: json.attachments[0].id
+					}
+				] : []
+			})
+
+			// onsubmitresult(content, id, json.id, json.fileData);
+
+			textInput.focus();
+	}
 </script>
 
 <div class="mt-auto">
@@ -59,7 +111,6 @@
 						onsubmit={(e) => {
 							e.preventDefault();
 							selectedFileName = e.currentTarget.filename.value;
-							console.log(e.currentTarget.filename.value, e.currentTarget.content.files);
 							const dataTransfer = new DataTransfer();
 							const codeFile = new File([e.currentTarget.content.value], selectedFileName, { type: 'text/plain' });
 							
@@ -95,31 +146,10 @@
 	<form
 		method="POST"
 		action="?/sendMessage"
-		use:enhance={({ formData }) => {
-			const content = formData.get('content') as string;
-			textInput.value = '';
-			fileInput.value = '';
-			selectedFileName = '';
-			onsubmit({ author, content });
-			return async ({ result }) => {
-				await updateMessages();
-				applyAction(result);
-				textInput.focus();
-			};
-		}}
+		onsubmit={handleSubmit}
 		enctype="multipart/form-data"
 		class="flex border border-l-0 border-black bg-white"
 	>
-		<!-- <DarkInput
-			disabled
-			notRounded
-			class="w-25"
-			value={author}
-			onchange={(e) => (author = e.currentTarget.value)}
-			type="text"
-			name="author"
-			placeholder="autor"
-		/> -->
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 		<label
@@ -146,7 +176,7 @@
 		<input
 			bind:this={textInput}
 			spellCheck={false}
-			placeholder="Arrastra algún archivo"
+			placeholder={disabled ? "No puedes enviar mensajes sin haber iniciado sesión" : "Arrastra algún archivo"}
 			{disabled}
 			type="text"
 			name="content"

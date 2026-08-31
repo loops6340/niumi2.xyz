@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { Message } from '$lib/server/discord-chat';
+	import type { Message } from '$lib/db/ChatService';
 	interface Props {
 		lastMessage: Message;
 	}

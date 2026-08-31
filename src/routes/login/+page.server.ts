@@ -1,15 +1,8 @@
-import { fail, redirect } from "@sveltejs/kit";
-import {
-  generateToken,
-  setAuthCookie,
-} from "$lib/auth/jwt";
-
+import { fail, redirect } from "@sveltejs/kit"
 
 import type { Actions } from "./$types";
-import { validateUserCredentials } from "$lib/db";
-
 export const actions = {
-  login: async ({ cookies, request }) => {
+  login: async ({ request, locals }) => {
     const data = await request.formData();
     const name = data.get("name");
     const password = data.get("password");
@@ -33,23 +26,21 @@ export const actions = {
           };
         }
 
-        const user = await validateUserCredentials(name, password)!
+         console.log(`${name.split(" ").join("")}@niumi.xyz`)
+         console.log(password)
+        const {error} = await locals.supabase.auth.signInWithPassword({
+          email: `${name.split(" ").join("")}@niumi.xyz`,
+          password: password
+        })
 
-        if (user === null) {
+        if (error) {
           return {
             success: false,
             error: "login-failed",
-            message: "Credenciales inválidas",
+            message: "credenciales inválidas",
           };
         }
 
-        const tokenPayload = {
-          id: user!.id,
-          name: user!.name,
-          avatarURL: user!.avatar_url
-        };
-        const accessToken = generateToken(tokenPayload);
-        setAuthCookie(cookies, accessToken);
         return { success: true };
       } catch (error) {
         console.error("Registration error:", error);
@@ -81,7 +72,7 @@ export const actions = {
           return fail(503, { error: true, message: result.message });
 
         case "database-error":
-        case "registration-failed":
+        case "login-failed":
         default:
           return fail(500, { error: true, message: result.message });
       }

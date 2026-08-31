@@ -1,127 +1,99 @@
 <script lang="ts">
-	import FilesList from '$lib/components/FilesList.svelte';
+	// import FilesList from '$lib/components/FilesList.svelte';
 	import MessageSenderInput from '$lib/components/MessageSenderInput.svelte';
 	import MessagesList from '$lib/components/MessagesList.svelte';
-	// import NavBar from '$lib/components/NavBar.svelte';
-	// import SendCodeForm from '$lib/components/SendCodeForm.svelte';
-	import type { Message } from '$lib/server/discord-chat';
-	import axios from 'axios';
+
 	import NiumiPanelInfo from '$lib/components/NiumiPanelInfo.svelte';
 	import ChatChannels from '$lib/components/ChatChannels.svelte';
 	import ChatInfoPanel from '$lib/components/ChatInfoPanel.svelte';
+	import ChatSocket from '$lib/db/ChatSocket.js';
+	import ChatStore, { messages } from '$lib/stores/chat.store.js';
+	import { onMount } from 'svelte';
 
-	let messages = $state<Message[]>([]);
-	let author = $state<string>('Anónimo');
-	let lastMessageId = $state<string>('');
+	// let author = $state<string>('Anónimo');
+	// let lastMessageId = $state<string>('');
 	let isMessagesLoading = $state(false);
 
 	let { data, form } = $props();
-	const noMessageRegex = /^\{([^}]+)\}/;
+	// const noMessageRegex = /^\{([^}]+)\}/;
+	// const regex = /^\{([^}]+)\}:(.+)$/;
+	
+	const chatStore = new ChatStore()	
+	onMount(() => {
+		chatStore.messages.load(data.supabase, 1)
+		if ($messages) {
+			// const lastMessage = $messages.at(-1)!;
+			// lastMessageId = lastMessage.id;
+		}
 
-	const regex = /^\{([^}]+)\}:(.+)$/;
+		const socket = new ChatSocket(data.supabase)
+		
+		const connection = socket.on("message", async ({ data: message }) => {
+			if (!$messages.some(msg => msg.id === message.id)) {
 
-	$effect(() => {
-		updateMessages();
-		// $inspect(messages)
+				chatStore.messages.unshift({ 
+					id: message.id, 
+					content: message.content, 
+					created_at: message.created_at, 
+					user: {
+						id: data.user.id,
+						name: data.user.name,
+						avatar_url: data.user.avatar_url,
+						created_at: data.user.created_at
+					},
+					attachments: []
+				})
 
-		if (data.user) {
-			author = data.user.name;
+      			console.log('Database change received!')
+			}
+		})
+
+		return () => {
+			connection.unsubscribe()
 		}
 	});
 
-	function parseMessages(messages: Message[]) {
-		return messages.map((message) => {
-			const isAnonymous = !message.content.startsWith('{') && !message.content.includes('}');
+	// function parseMessages(messages: Message[]) {
+	// 	return messages.map((message) => {
+	// 		const isAnonymous = !message.content.startsWith('{') && !message.content.includes('}');
 
-			if (isAnonymous) {
-				message.author.username = undefined;
+	// 		if (isAnonymous) {
+	// 			message.author.username = undefined;
 
-				// messages[i].author.username = undefined;
-			} else {
-				const authorName =
-					message.content.match(regex)?.[1] || message.content.match(noMessageRegex)?.[1];
-				message.author.username = authorName;
-				message.content = message.content.slice(message.author!.username!.length + 4);
-			}
-			return message
-		});
-	}
+	// 			// messages[i].author.username = undefined;
+	// 		} else {
+	// 			const authorName =
+	// 				message.content.match(regex)?.[1] || message.content.match(noMessageRegex)?.[1];
+	// 			message.author.username = authorName;
+	// 			message.content = message.content.slice(message.author!.username!.length + 4);
+	// 		}
+	// 		return message
+	// 	});
+	// }
 
-	async function updateMessages() {
-		try {
-			const data = await axios('/api/discord-chat');
-			let result = await data.data;
-			result = parseMessages(result);
-			messages = result;
-			if (messages) {
-				const lastMessage = messages.at(-1)!;
-				lastMessageId = lastMessage.id;
-			}
-		} catch {
-			alert("Hubo un error, el máximo de tamaño de archivo subido es de 4.5 mb :'v");
-		}
-	}
 
-	async function updateToPreviousMessages() {
-		try {
-			const data = await fetch(`/api/discord-chat?before=${lastMessageId}`);
+	// async function updateToPreviousMessages() {
+	// 	try {
+	// 		const data = await fetch(`/api/discord-chat?before=${lastMessageId}`);
 
-			messages = parseMessages(await data.json());
+	// 		messages = parseMessages(await data.json());
 
-			lastMessageId = messages[49].id;
-		} catch {
-			alert("Hubo un error, el máximo de tamaño de archivo subido es de 4.5 mb :'v");
-		}
-	}
+	// 		lastMessageId = messages[49].id;
+	// 	} catch {
+	// 		alert("Hubo un error, el máximo de tamaño de archivo subido es de 4.5 mb :'v");
+	// 	}
+	// }
 
-	function changeMessagesLoadingState() {
-		isMessagesLoading = !isMessagesLoading;
-	}
-
-	function createMessage(user: { author: string; content: string }) {
-		return {
-			author: {
-				username: user.author,
-				id: '',
-				avatar: '',
-				discriminator: '',
-				public_flags: 0,
-				flags: 0,
-				banner: null,
-				accent_color: null,
-				global_name: null,
-				avatar_decoration_data: null,
-				collectibles: null,
-				display_name_styles: null,
-				banner_color: null,
-				clan: null,
-				primary_guild: null
-			},
-			content: user.content,
-			type: 0,
-			mentions: [],
-			mention_roles: [],
-			attachments: [],
-			embeds: [],
-			timestamp: Temporal.Now.plainDateTimeISO(Intl.DateTimeFormat().resolvedOptions().timeZone).toString(),
-			edited_timestamp: null,
-			flags: 0,
-			components: [],
-			id: '',
-			channel_id: '',
-			pinned: false,
-			mention_everyone: false,
-			tts: false,
-			pending: true
-		};
-	}
+	// function changeMessagesLoadingState() {
+	// 	isMessagesLoading = !isMessagesLoading;
+	// }
 </script>
 
 <div class="flex h-screen max-h-screen w-screen max-w-screen flex-col">
 	<!-- <NavBar route="Chat" user={data.user?.name} userAvatarURL={data.user?.avatarURL} /> -->
 	<div class="flex min-h-0 flex-1">
-		<NiumiPanelInfo user={data.user?.name} userAvatarURL={data.user?.avatarURL} />
-		<ChatChannels lastMessage={messages[0]} />
+		<NiumiPanelInfo user={data.user?.name} userAvatarURL={data.user?.avatar_url} />
+		<ChatChannels lastMessage={$messages[0]} />
 		<!-- <SendCodeForm disabled={false} /> -->
 		<div
 			class="relative flex w-full flex-1 flex-col border-l border-black bg-zinc-50 bg-[url(https://i.imgur.com/6qWFlY0.png)] bg-cover md:w-[calc(100%-400px)]"
@@ -141,29 +113,23 @@
 						</div>
 					{:else}
 						<MessagesList
-							{updateMessages}
-							users={data.users || []}
-							{updateToPreviousMessages}
-							messages={messages!}
-							{changeMessagesLoadingState}
+							// {updateMessages}
+							// {updateToPreviousMessages}
+							messages={$messages!}
+							// {changeMessagesLoadingState}
 						/>
 					{/if}
-					{#if form?.invalid}
+					{#if form?.error}
 						<div class="flex items-center justify-center bg-red-500 p-2">
-							<p class="font-bold text-white">{form.message}</p>
+							<p class="font-bold text-white">{form.description}</p>
 						</div>
 					{/if}
 					<MessageSenderInput
-						{author}
-						{updateMessages}
-						disabled={false}
-						onsubmit={(u) => {
-							messages.reverse().push(createMessage(u));
-							messages.reverse();
-						}}
+						user={data.user}
+						disabled={data.user ? false : true}
 					/>
 				</div>
-				<FilesList messages={messages!} />
+				<!-- <FilesList messages={$messages!} /> -->
 			</div>
 		</div>
 	</div>

@@ -1,19 +1,16 @@
 import { fail, redirect } from "@sveltejs/kit";
-import {
-  generateToken,
-  setAuthCookie,
-} from "$lib/auth/jwt";
-import jwt from 'jsonwebtoken'
 
 import type { Actions } from "./$types";
-import { editUserData } from "$lib/db";
-import { getAvatarPublicURL, uploadAvatar } from "$lib/storage";
+import { UserService } from "$lib/db/UserService";
+import StorageService from "$lib/db/StorageService";
 
 export const actions = {
-  edit: async ({ cookies, request }) => {
+  edit: async ({ request, locals }) => {
+
+    const storageService = new StorageService(locals.supabase)
+    const userService = new UserService(locals.supabase)
     const data = await request.formData();
-    // const name = data.get("name");
-    // const password = data.get("password");
+  
     const avatar = data.get("avatar") as File;
 
     const editUser = async () => {
@@ -46,6 +43,7 @@ export const actions = {
         //   };
         // }
 
+ 
          if (!avatar.name.includes("png") && !avatar.name.includes("jpg") && !avatar.name.includes("jpeg")) {
           return {
             success: false,
@@ -62,7 +60,7 @@ export const actions = {
           }
         }
 
-        const { data, error } = await uploadAvatar(avatar)!
+        const { data, error } = await storageService.uploadAvatar(avatar)!
 
         if (error) {
           return {
@@ -80,24 +78,12 @@ export const actions = {
           }
         }
 
-        const previousAccessToken = cookies.get("access_token")!
+        const user = await locals.supabase.auth.getUser();
 
-        const user = jwt.decode(previousAccessToken) as jwt.JwtPayload;
-
-        await editUserData({
-          id: user.id,
-          avatarURL: getAvatarPublicURL(data.path)
+        await userService.editUserData({
+          id: user.data.user!.id,
+          avatarURL: storageService.getPublicURL(data.path)
         })
-
-
-        const tokenPayload = {
-          id: user.id,
-          name: user.name,
-          avatarURL: getAvatarPublicURL(data.path)
-        };
-
-        const accessToken = generateToken(tokenPayload);
-        setAuthCookie(cookies, accessToken);
         return { success: true };
       } catch (error) {
         console.error("Registration error:", error);

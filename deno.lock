@@ -3,7 +3,8 @@
   "specifiers": {
     "npm:@codemirror/lang-javascript@^6.2.5": "6.2.5",
     "npm:@eslint/js@^10.0.1": "10.0.1_eslint@10.7.0",
-    "npm:@supabase/supabase-js@^2.110.8": "2.110.8",
+    "npm:@supabase/ssr@~0.12.4": "0.12.4_@supabase+supabase-js@2.112.0",
+    "npm:@supabase/supabase-js@^2.112.0": "2.112.0",
     "npm:@sveltejs/adapter-auto@^7.0.1": "7.0.1_@sveltejs+kit@2.70.1__@sveltejs+vite-plugin-svelte@7.2.0___svelte@5.56.7___vite@8.1.5____@types+node@26.1.1___@types+node@26.1.1__svelte@5.56.7__typescript@6.0.3__vite@8.1.5___@types+node@26.1.1__@types+node@26.1.1_@sveltejs+vite-plugin-svelte@7.2.0__svelte@5.56.7__vite@8.1.5___@types+node@26.1.1__@types+node@26.1.1_@types+node@26.1.1_svelte@5.56.7_typescript@6.0.3_vite@8.1.5__@types+node@26.1.1",
     "npm:@sveltejs/kit@^2.63.0": "2.70.1_@sveltejs+vite-plugin-svelte@7.2.0__svelte@5.56.7__vite@8.1.5___@types+node@26.1.1__@types+node@26.1.1_svelte@5.56.7_typescript@6.0.3_vite@8.1.5__@types+node@26.1.1_@types+node@26.1.1",
     "npm:@sveltejs/vite-plugin-svelte@^7.1.2": "7.2.0_svelte@5.56.7_vite@8.1.5__@types+node@26.1.1_@types+node@26.1.1",
@@ -370,14 +371,14 @@
     "@standard-schema/spec@1.1.0": {
       "integrity": "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="
     },
-    "@supabase/auth-js@2.110.8": {
-      "integrity": "sha512-TQ5neTUDX2C2WmyYa03yGhLMkhdE/SkHXtK8/qxO/APUy3rsymsJCBP48p4jcN6iO2G0ow6RRexQd2mX+dSyJg==",
+    "@supabase/auth-js@2.112.0": {
+      "integrity": "sha512-8qAdObNQHKbSeVBLmf2WLNT7+bCE8zBofpCFiNUqGBAl5qw9VagSvcmPXlh78McAU7iHrGik1oeJxiB2A6B29w==",
       "dependencies": [
         "tslib"
       ]
     },
-    "@supabase/functions-js@2.110.8": {
-      "integrity": "sha512-5yB9TLYzvv2oSQxwb0gamEvIAsuH66pVt7AM/pz03S7wN6ehD34GNgbShrccetqPedXQSz7e/1hAJ9NeEhoZVg==",
+    "@supabase/functions-js@2.112.0": {
+      "integrity": "sha512-2DdaEZs0vq86orMIZBO+eM5w5/UxZb1EZyg2JraBKS4W9BzfFO+fOFD6YStmZ7iAOWvxNTGPjPNItsofpGgTCA==",
       "dependencies": [
         "tslib"
       ]
@@ -385,28 +386,35 @@
     "@supabase/phoenix@0.4.5": {
       "integrity": "sha512-aAn9H9ovVyeApKy11OWOrrOGq8DV68yWeH4ud2lN9fzn4aO8Zb5GLL9m1pUg9nLqIcT+ZDfAcsZe0E/nqdv2lw=="
     },
-    "@supabase/postgrest-js@2.110.8": {
-      "integrity": "sha512-QeRROxl1PpOZw5Jzi7BwdN9icsycMrLlCCvsjS0hYLW+nZoaT46zdagz/glJirj8jHF4jSd5Jyipuae2cBClCw==",
+    "@supabase/postgrest-js@2.112.0": {
+      "integrity": "sha512-4HKCVq32Jlk/wS8Ud8QgaAuQ4u6w1hZfw/gS5IcIN7wYddElMj4kfiCZpHMPfncomMnYzAKBUhwBZPpRcTH2Yw==",
       "dependencies": [
         "tslib"
       ]
     },
-    "@supabase/realtime-js@2.110.8": {
-      "integrity": "sha512-mwX7ituX6O31fLf+0g65rpLlNxqgnMaPltPsQwzox6jfmbfVl3tCxXrfr3HEsQcCRjpjuJG1+A0vFzP1yVjKHA==",
+    "@supabase/realtime-js@2.112.0": {
+      "integrity": "sha512-McFFP+ivFDMTaCEh8JDpG+sPEmv5IjKvrP0uTH3Lbsriai4KbxB8ycY8TqPQnbjhOVjEifQm1q0y2tL1CUw9Zg==",
       "dependencies": [
         "@supabase/phoenix",
         "tslib"
       ]
     },
-    "@supabase/storage-js@2.110.8": {
-      "integrity": "sha512-CcfhkZFBLxsthgUabZKxwfsoXdrikIGsL3LsGoV3FZTqCMx/s1y49taT4jT/oya5+1IuB0sFFHw6pF0o0iJniQ==",
+    "@supabase/ssr@0.12.4_@supabase+supabase-js@2.112.0": {
+      "integrity": "sha512-xHzcgI8cC1TpBKSwJcR5Yd8CCwfIq0SBc5yb4yz/YFw5tbCrEQ0QT3a+2jymCxHgQWLfzwN93HZ6eRbcoMkOlA==",
+      "dependencies": [
+        "@supabase/supabase-js",
+        "cookie@1.1.1"
+      ]
+    },
+    "@supabase/storage-js@2.112.0": {
+      "integrity": "sha512-X44Bl045X/e5e2tJqWsY+JmQvgtm04BJuijiWprIWYLn0mDvGnu8hLdzPOPcTVji7wlqbt2ZUHttsv+rGKQYXw==",
       "dependencies": [
         "iceberg-js",
         "tslib"
       ]
     },
-    "@supabase/supabase-js@2.110.8": {
-      "integrity": "sha512-E5qzoe74zhJRv4wRcbO9eMYzeQDb/+h6c603pL8shcxLGBjTKsIF7XXj05IcNj23TLDgJN1WkMw7mwAPyu5dZg==",
+    "@supabase/supabase-js@2.112.0": {
+      "integrity": "sha512-dHVOgog58GOagtrZuPxJYg/R45ZV2U0qqgXffH+lMlt1OS+267Pw4g7bw3iXCGxN85OufiE0nI1baxDXlgEyfQ==",
       "dependencies": [
         "@supabase/auth-js",
         "@supabase/functions-js",
@@ -435,7 +443,7 @@
         "@sveltejs/vite-plugin-svelte",
         "@types/cookie",
         "acorn",
-        "cookie",
+        "cookie@0.6.0",
         "devalue",
         "esm-env",
         "kleur",
@@ -955,6 +963,9 @@
     },
     "cookie@0.6.0": {
       "integrity": "sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw=="
+    },
+    "cookie@1.1.1": {
+      "integrity": "sha512-ei8Aos7ja0weRpFzJnEA9UHJ/7XQmqglbRwnf2ATjcB9Wq874VKH9kfjjirM6UhU2/E5fFYadylyhFldcqSidQ=="
     },
     "crelt@1.0.7": {
       "integrity": "sha512-aK6BbWfhf4U/wCcLHKPJl/xa6VkVstRaPywWtMKGwuOLc/wZTyQYuoxgvZnNsBvv7Kg3YTBQYYBCggcviQczuA=="
@@ -2017,7 +2028,8 @@
       "dependencies": [
         "npm:@codemirror/lang-javascript@^6.2.5",
         "npm:@eslint/js@^10.0.1",
-        "npm:@supabase/supabase-js@^2.110.8",
+        "npm:@supabase/ssr@~0.12.4",
+        "npm:@supabase/supabase-js@^2.112.0",
         "npm:@sveltejs/adapter-auto@^7.0.1",
         "npm:@sveltejs/kit@^2.63.0",
         "npm:@sveltejs/vite-plugin-svelte@^7.1.2",

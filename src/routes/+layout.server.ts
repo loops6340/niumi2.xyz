@@ -1,19 +1,12 @@
-import type { LayoutServerLoad } from './$types';
-import jwt from "jsonwebtoken";
+import type { LayoutServerLoad } from './$types'
+export const load: LayoutServerLoad = async ({ cookies, locals }) => {
 
-export const load: LayoutServerLoad = async ({ cookies }) => {
+  const { data: result } = await locals.supabase.auth.getUser()
+  
+  const user = result || null
 
-	const accessToken = cookies.get("access_token")
-	if (accessToken) {
-		const data = jwt.decode(accessToken) as jwt.JwtPayload;
-		console.log(data)
-		return {
-			user: data || null
-		};
-	}
-	console.log("refrescado")
-
-	return {
-		user: null
-	}
-};
+  return {
+    user: user.user,
+    cookies: cookies.getAll(),
+  }
+}

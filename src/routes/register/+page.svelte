@@ -5,7 +5,7 @@
 </script>
 
 <div class="text-darkmode-light-primary flex h-screen w-screen">
-	<NiumiPanelInfo user={data.user?.name} userAvatarURL={data.user?.avatarURL} />
+	<NiumiPanelInfo user={data.user?.name} userAvatarURL={data.user?.avatar_url} />
 
 	<div
 		class="mt-auto mb-auto flex h-full flex-1 flex-col items-center gap-5 bg-[url(https://i.imgur.com/3N0gyAY.png)] bg-cover"

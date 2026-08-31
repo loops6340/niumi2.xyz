@@ -7,7 +7,7 @@
 	import { RiSystemUpload2Fill } from 'svelte-icons-pack/ri';
 	let { data, form } = $props();
 	let fileInput: HTMLInputElement;
-	let avatar = $derived(data.user?.avatarURL);
+	let avatar = $derived(data.user?.avatar_url);
 
 	const logout = async () => {
 		await fetch('/api/logout');
@@ -18,7 +18,7 @@
 
 <div class="flex h-screen w-screen">
 	<!-- <NavBar route="Perfil" user={data.user?.name} userAvatarURL={data.user?.avatarURL} /> -->
-	<NiumiPanelInfo user={data.user?.name} userAvatarURL={data.user?.avatarURL} />
+	<NiumiPanelInfo user={data.user?.name} userAvatarURL={data.user?.avatar_url} />
 
 	<div
 		class="mt-auto mb-auto flex h-full flex-1 flex-col items-center gap-5 bg-[url(https://i.imgur.com/3N0gyAY.png)] bg-cover"

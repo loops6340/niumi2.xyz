@@ -1,4 +1,5 @@
 	export const extensionImages = [
+		{ name: "xlsx", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/6/60/Microsoft_Office_Excel_%282025%E2%80%93present%29.svg" },
 		{
 			name: 'png',
 			imageUrl: 'https://img.icons8.com/fluent/512/image-file.png'
