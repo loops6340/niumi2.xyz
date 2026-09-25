@@ -28,7 +28,7 @@ export const load: LayoutLoad = async ({ fetch, data, depends }) => {
    * which does not validate the JWT.
    */
 
-  const { data: profile }  = await supabase.from("Profiles").select().eq("id", data.user?.id)
+  const { data: profile }  = await supabase.from("profiles").select().eq("id", data.user?.id)
   const { data: claimsData, error } = await supabase.auth.getClaims()
   const claims = error ? null : claimsData?.claims
   return { supabase, claims, user: profile?.[0] as User }

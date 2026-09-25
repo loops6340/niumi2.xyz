@@ -1,6 +1,7 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import { UserService } from "$lib/db/UserService";
+import { ChatsService } from "$lib/db/ChatService";
 
 export const actions = {
   register: async ({ request, locals }) => {
@@ -50,6 +51,9 @@ export const actions = {
               message: "Una cuenta con este nombre ya existe",
             };
           }
+
+          const chatsService = new ChatsService(locals.supabase)
+          await chatsService.joinToDMChat("d4f2a9c3-4e50-4b91-adbb-379bae5625cf")
 
         return { success: true };
       } catch (error) {

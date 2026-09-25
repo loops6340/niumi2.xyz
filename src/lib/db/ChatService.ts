@@ -1,56 +1,167 @@
 import StorageService from '$lib/db/StorageService';
 import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
-
+import type { Chat, Message } from './types';
 interface MessageDataProps {
+    id: string;
 	content: string;
     authorId: string;
     attachments?: File[]
 }
 
-export interface Attachment {
-    filename: string;
-    url: string;
-    id: number,
-}
+export class ChatsService {
+	supabaseClient: SupabaseClient;
+	constructor(supabaseClient: SupabaseClient) {
+		this.supabaseClient = supabaseClient;
+	}
 
-export interface User {
-    id: string;
-    name: string;
-    avatar_url: string;
-    created_at: string;
-}
+    async getAll() {
+        const { data, error } = await this.supabaseClient.from("chats").select(`
+            *,
+            last_message:messages!last_message_id(
+                *,
+                author:profiles(*)
+            ),
+            members:profiles(*)
+        `)
+        // const { data, error } = await this.supabaseClient.from("profiles").select(`
+        //     chats:chats(
+        //         *,
+        //         last_message:messages!last_message_id(
+        //             *,
+        //             author:profiles(*)
+        //         )
+        //     )    
+        // `).single()
+        console.log(error, data)
+        return { data: data, error } as { data: Chat[], error: PostgrestError }
+    }
 
-export interface Message {
-    id: string;
-    content: string;
-    created_at: string;
-    user: User;
-    attachments: Attachment[]
+    getChat(id: string) {
+        return new ChatService(this.supabaseClient, id)
+    }
+
+
+    async getDMChat(user_id: string) {
+        const { data, error } = await this.supabaseClient.from("users_chats")
+            .select('*, chat:chats!inner(type, id)')
+            .filter('chat.type', 'eq', '1')
+            .eq('user_id', user_id)
+        if (error) {
+            return { error: error }
+        }
+        
+        if (data.length > 0) return { data: data[0].chat, error: null }
+        return { data: null, error: null  }
+    }
+    
+
+    async DMChatExists(user_id: string) {
+        const { data, error } = await this.supabaseClient.from("users_chats")
+            .select('chat:chats!inner(type)')
+            .filter('chat.type', 'eq', '1')
+            .eq('user_id', user_id)
+        if (error) {
+            return { error: error }
+        }
+        
+        if (data.length !== 0) return { data: true, error: null }
+        return { data: false, error: null  }
+    }
+
+    async createDMChat(user1: string, withUser: string) {
+
+        if (user1 == withUser) {
+            return { error: true }
+        }
+        const id = crypto.randomUUID()
+        const { error } = await this.supabaseClient.from("chats").insert({
+            id,
+            type: 1,
+        })
+
+        if (error) {
+            return { error }
+        }
+
+        const { error: user1Error } = await this.supabaseClient.from("users_chats").insert({
+            chat_id: id,
+            user_id: user1
+        })
+
+        if (error) {
+            return { error: user1Error }
+        }
+
+        const { error: user2Error } = await this.supabaseClient.from("users_chats").insert({
+            chat_id: id,
+            user_id: withUser
+        })
+
+        if (user2Error) {
+            return { error: user2Error }
+        }
+        return { id, error: null }
+    }
+
+    async joinToDMChat(chatId: string) {
+        
+        const { data: userData } = await this.supabaseClient.auth.getUser()
+
+        const { error } = await this.supabaseClient.from("users_chats").insert({
+            chat_id: chatId,
+            user_id: userData.user?.id
+        })
+
+        if (error) {
+            return { error: error }
+        }
+    }
 }
 
 export default class ChatService {
 	supabaseClient: SupabaseClient;
-    chatId: number;
-	constructor(supabaseClient: SupabaseClient, chatId: number) {
+    chatId: string;
+	constructor(supabaseClient: SupabaseClient, chatId: string) {
         this.chatId = chatId
 		this.supabaseClient = supabaseClient;
 	}
 
+    async update({ lastMessageId }: { lastMessageId: string }) {
+        const { data, error } = await this.supabaseClient.from("chats").update({
+            last_message_id: lastMessageId
+        }).eq("id", this.chatId);
+        return { data, error }
+    }
+
     async getMessages() {
-        const result = await this.supabaseClient.from("Messages").select(`
+        const result = await this.supabaseClient.from("messages").select(`
             id,
             content,
             created_at,
-            user:Profiles!inner(id, name, avatar_url, created_at),
-            attachments:Attachments(id, filename, url, created_at, id)
+            chat_id,
+            author:profiles!inner(id, name, avatar_url, created_at),
+            attachments:attachments(id, filename, url, created_at, id)
         `)
         .eq("chat_id", this.chatId)
         
         return result as { data: Message[] | null, error: PostgrestError | null};
     }
 
-	async sendMessage({ content, authorId, attachments }: MessageDataProps) {
-        const { data: messageData, error } = await this.supabaseClient.from("Messages").insert({
+    async getMessage(id: string) {
+        const result = await this.supabaseClient.from("messages").select(`
+            id,
+            content,
+            created_at,
+            chat_id,
+            author:profiles(*),
+            attachments:attachments(id, filename, url, created_at)
+        `).eq("id", id).single()
+        return result;
+    }
+
+	async sendMessage({ id, content, authorId, attachments }: MessageDataProps) {
+        const { data: messageData, error } = await this.supabaseClient.from("messages").insert({
+            id,
             content,
             author_id: authorId,
             chat_id: this.chatId
@@ -64,7 +175,7 @@ export default class ChatService {
             
             if (fileError) return { error: fileError };
 
-            const { error } = await this.supabaseClient.from("Attachments").insert({
+            const { error } = await this.supabaseClient.from("attachments").insert({
                 filename: attachments[0].name,
                 url: storageService.getPublicURL(fileData!.path),
                 author_id: authorId,
@@ -80,10 +191,10 @@ export default class ChatService {
             } 
         }
 
-        const messageFinalData = await this.supabaseClient.from("Messages").select(`
+        const messageFinalData = await this.supabaseClient.from("messages").select(`
             *,
-            author:Profiles(*),
-            attachments:Attachments(*)
+            author:profiles(*),
+            attachments:attachments(*)
         `).eq("id", messageData.id).single();
 
         if (attachments) return { data: messageFinalData.data, error: error }
@@ -92,7 +203,7 @@ export default class ChatService {
 	}
 
     async removeMessage(id: string) {
-        const { data, error } = await this.supabaseClient.from("Messages").delete().eq("id", id);
+        const { data, error } = await this.supabaseClient.from("messages").delete().eq("id", id);
         return { data, error }
     }
 }

@@ -23,8 +23,8 @@ export default class StorageService {
 	async uploadFile(file: File) {
 		const { data, error } = await this.supabaseClient.storage
 			.from('niumi')
-			.upload(path.join('/files/', file.name + '_' + crypto.randomUUID()), file);
-		return { data, error };
+			.upload(path.join('/files/', file.name.replace(/[^a-zA-Z0-9/.\-_]/g, '') + '_' + crypto.randomUUID()), file);
+		return { data, error }
 	}
 
 	async removeFile(path: string) {

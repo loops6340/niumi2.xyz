@@ -28,6 +28,8 @@
 				>
 					{#if userAvatarURL}
 						<img class="h-7 w-7 rounded-full hover:border border-dm-light-primary object-cover transition" src={userAvatarURL} alt="" />
+					{:else}
+						<div class="h-7 w-7 rounded-full hover:border border-dm-light-primary bg-dm-light-primary object-cover transition"></div>
 					{/if}
 				</a>
 			</div>

@@ -14,9 +14,9 @@
 		)
 	);
 
-	const isAnon = $derived(message.user.name === undefined);
+	const isAnon = $derived(message.author.name === undefined);
 	const hasDifferentAthorThanThePreviousMessage = $derived(
-		message.user.name !== lastMessage?.user.name
+		message.author.name !== lastMessage?.author.name
 	);
 	const fourMinutesBeforeThisMessage = $derived(
 		new Date(message.created_at).getTime() - 1000 * 60 * 4
@@ -26,10 +26,10 @@
 
 <div class="flex gap-1 hover:[&>span]:opacity-50">
 	{#if isAnon || hasDifferentAthorThanThePreviousMessage || fourMinutesBeforeThisMessage > lastMessageTime}
-		{#if message.user.avatar_url}
+		{#if message.author.avatar_url}
 			<img
 				class="h-12.5 w-12.5 rounded-full border border-dm-dark-primary object-cover"
-				src={message.user.avatar_url}
+				src={message.author.avatar_url}
 				alt=""
 			/>
 		{:else}
@@ -52,7 +52,7 @@
 	>
 		<div class="font-bold md:max-w-200">
 			{#if hasDifferentAthorThanThePreviousMessage || fourMinutesBeforeThisMessage > lastMessageTime}
-				{message.user.name || 'Anónimo'}
+				{message.author.name || 'Anónimo'}
 				<span class="text-[10px] font-normal">
 					{date.hour}:{date.minute}{date.hour > 11 ? 'pm' : 'am'}
 				</span>

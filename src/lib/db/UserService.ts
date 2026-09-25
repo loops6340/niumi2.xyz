@@ -1,5 +1,4 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from './db.types';
 
 interface EditUserDataProps {
 	id: string;
@@ -9,18 +8,21 @@ interface EditUserDataProps {
 }
 
 export class UserService {
-	supabaseClient: SupabaseClient<Database>;
+	async getUserByName(name: string) {
+		const { data, error } = await this.getProfilesTable().select("*").eq('name', name).single()
+		return { data, error }
+	}
+	supabaseClient: SupabaseClient;
 	constructor(supabaseClient: SupabaseClient) {
 		this.supabaseClient = supabaseClient;
 	}
 
 	private getProfilesTable() {
- 		return this.supabaseClient.from("Profiles")
+ 		return this.supabaseClient.from("profiles")
 	}
 
 	async editUserData(data: EditUserDataProps) {
-		const { error } = await this.supabaseClient
-			.from('Profiles')
+		const { error } = await this.getProfilesTable()
 			.update({ avatar_url: data.avatarURL })
 			.eq('id', data.id);
 		return { error };
@@ -39,6 +41,12 @@ export class UserService {
             emailRedirectTo: 'https://example.com/welcome',
           },
         })
+
+		const { error: profilesError } = await this.supabaseClient.from("profiles").insert({
+			name,
+        })
+		if (profilesError) console.log(profilesError)
+
 		return { error }
 	}
 

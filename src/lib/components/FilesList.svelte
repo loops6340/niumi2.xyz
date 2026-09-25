@@ -1,14 +1,14 @@
 <script lang="ts">
-	import type { Message } from '$lib/server/discord-chat';
 	import { AiFillEye } from 'svelte-icons-pack/ai';
 	import ChatFile from './ChatFile.svelte';
 	import { Icon } from 'svelte-icons-pack';
 	import { extensionImages, showableFileExtensions } from '$lib/constants';
 	import UIWindow from './UI/UIWindow.svelte';
+	import type { MessageState } from '$lib/stores/chat.store';
 
 
 	interface Props {
-		messages: Message[];
+		messages: MessageState[];
 	}
 
 	let { messages }: Props = $props();
@@ -26,7 +26,7 @@
 
 <div class="hidden min-h-0 flex-1 flex-col gap-2 overflow-auto p-2 md:flex bg-dm-dark-primary">
 	{#each filteredMessages as message, index (index)}
-		{@const instant = Temporal.Instant.from(message.timestamp)}
+		{@const instant = Temporal.Instant.from(message.created_at)}
 		{@const zoned = instant.toZonedDateTimeISO(Temporal.Now.timeZoneId())}
 		{@const dd = String(zoned.day).padStart(2, '0')}
 		{@const mm = String(zoned.month).padStart(2, '0')}

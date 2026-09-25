@@ -6,16 +6,20 @@
 	import DarkButton from './UI/DarkButton.svelte';
 	import LightButton from './UI/LightButton.svelte';
 	import UIWindow from './UI/UIWindow.svelte';
-	import ChatStore, { messages } from '$lib/stores/chat.store';
-	import type { User } from '$lib/db/ChatService';
+	import { ChatStore, messages, MessagesStore } from '$lib/stores/chat.store';
+	import type { User } from '$lib/db/types';
+	import ChatService from '$lib/db/ChatService';
+	import type { SupabaseClient } from '@supabase/supabase-js';
 
 
 	interface Props {
 		disabled: boolean;
 		user: User;
+		chatId: string
+		supabase: SupabaseClient
 	}
 
-	let { disabled, user }: Props = $props();
+	let { disabled, user, chatId, supabase }: Props = $props();
 	let selectedFileName = $state<string>('');
 
 	let showCodeForm = $state<boolean>(false);
@@ -44,21 +48,23 @@
 			const formData = new FormData(event.currentTarget, event.submitter);
 			const file =  formData.get('file') as File;
 			const content = formData.get('content') as string;
-
 			textInput.value = '';
 			fileInput.value = '';
 			selectedFileName = '';
 
 			const id = crypto.randomUUID();
-			
-			const chatStore = new ChatStore()
+
+			formData.set("id", id)
+			formData.set("chat_id", String(chatId))
+
+			const messagesStore = new MessagesStore(chatId)
 			const now = Temporal.Now.plainDateTimeISO(Intl.DateTimeFormat().resolvedOptions().timeZone).toString() + "+00:00"
 			
-			chatStore.messages.unshift({
+			messagesStore.unshift({
 				content,
 				id,
 				created_at: now,
-				user: {
+				author: {
 					id: user.id,
 					name: user.name,
 					avatar_url: user.avatar_url,
@@ -66,6 +72,7 @@
 				},
 				attachments: file.size > 0 ? [{ id: 0, filename: file.name, url: "..."}] : [],
 				pending: true,
+				chat_id: chatId
 			});
 			const result = await fetch("/api/messages", {
 				method: "POST",
@@ -73,19 +80,29 @@
 			})
 		
 			const json = await result.json()
-			console.log(json.data, "JSON DATA")
-			chatStore.messages.set($messages.findIndex(msg => msg.id === id), {
+
+			const chatService = new ChatService(supabase, chatId)
+			
+			await chatService.update({
+				lastMessageId: json.id
+			})
+
+			const chatStore = new ChatStore(chatId)
+			chatStore.changeLastMessage(json)
+			messagesStore.set($messages.findIndex(msg => msg.id === id), {
 				id: json.id,
 				created_at: now,
 				content,
-				user,
+				author: user,
 				attachments: file.size > 0 ? [
 					{ 
 						filename: file.name, 
 						url: json.attachments[0].url,
 						id: json.attachments[0].id
 					}
-				] : []
+				] : [],
+				pending: false,
+				chat_id: chatId
 			})
 
 			// onsubmitresult(content, id, json.id, json.fileData);
