@@ -66,19 +66,32 @@
 		{/if}
 
 		{#each $chats.filter(chat => chat.name.toLowerCase().startsWith(searchValue)) as chat, index(index)}
+			{@const date = chat.last_message ? Temporal.Instant.from(chat.last_message?.created_at).toZonedDateTimeISO(
+			Intl.DateTimeFormat().resolvedOptions().timeZone
+			) : undefined}
 			<button class="flex items-start gap-3 rounded hover:bg-dm-dark-secondary p-2 cursor-pointer" onclick={() => goto(resolve(`/chat/${chat.id}`))}>
 				<div class="h-10 min-h-10 w-10 min-w-10 rounded-full bg-dm-light-primary">
 					{#if chat.photo_url}
-						<img src={chat.photo_url} class="h-10 object-cover rounded-full"  alt="">
+						<img src={chat.photo_url} class="h-10 w-10 object-cover rounded-full"  alt="">
 					{/if}
 				</div>
 				<div class="flex flex-col text-start">
 					<div class="font-bold text-dm-light-primary">{chat.name}</div>
-					<p class="text-dm-light-primary text-ellipsis text-nowrap overflow-hidden w-40">
+					<p class="text-dm-light-primary text-ellipsis text-nowrap overflow-hidden w-34">
 						{#if chat.last_message}
 							{chat.last_message.author.name}: {chat.last_message.content}
 						{/if}
 					</p>
+				</div>
+				<div class="flex gap-1 flex-col">
+					<div class="mb-auto text-dm-light-primary text-[12px]">
+						{#if date}
+							{('0' + date.hour).slice(0, 2)}:{('0' + date.minute).slice(0, 2)}{date.hour > 11 ? 'pm' : 'am'}
+						{/if}
+					</div>
+					{#if chat.unreaded_messages > 0}
+						<div class="rounded-full bg-dm-light-primary text-dm-dark-primary w-5 h-5 ml-auto">{chat.unreaded_messages}</div>
+					{/if}
 				</div>
 			</button>
 		{/each}

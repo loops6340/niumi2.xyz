@@ -10,10 +10,11 @@ describe("session", async () => {
 
 
     it("iniciar sesión", async () => {
-        const { data } = await supabase.auth.signInWithPassword({
+        const { error, data } = await supabase.auth.signInWithPassword({
             email: "loopstest@niumi.xyz",
             password: "fabio309"
         })
+        console.debug(error)
         expect(data.user).not.toEqual(null)
     })
 
@@ -70,6 +71,22 @@ describe("session", async () => {
         expect(error).not.toBe(null)
     })
     
+
+
+    it("se deberia registrar que los mensajes de un chat se han visto", async () => {
+        const chatsService = new ChatService(supabase, "d4f2a9c3-4e50-4b91-adbb-379bae5625cf");
+        const { error } = await chatsService.readMessages()
+        expect(error).toBe(null)
+    })
+
+
+    it("Se deberia poder ver la tabla con chats y mensajes no leidos de un usuario", async () => {
+        const chatsService = new ChatsService(supabase);
+        const { error, data } = await chatsService.getAll()
+        console.debug(data)
+        expect(error).toBe(null)
+    })
+
 
     // it("se debería crear un chat entre usuario 1 y 2", async () => {
     //     const chatsService = new ChatsService(supabase)

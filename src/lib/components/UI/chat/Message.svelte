@@ -42,7 +42,7 @@
 			class="flex w-12.5 items-center rounded border bg-dm-dark-primary text-[10px] font-normal text-dm-light-primary opacity-0 transition"
 		>
 			<span class="mx-auto">
-				{date.hour}:{date.minute}{date.hour > 11 ? 'pm' : 'am'}
+				{('0' + date.hour).slice(0, 2)}:{('0' + date.minute).slice(0, 2)}{date.hour > 11 ? 'pm' : 'am'}
 			</span>
 		</span>
 	{/if}

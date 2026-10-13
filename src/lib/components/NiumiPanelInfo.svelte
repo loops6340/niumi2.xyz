@@ -3,7 +3,7 @@
 	import { Icon } from 'svelte-icons-pack';
 	import { BiLogIn } from 'svelte-icons-pack/bi';
 	import { IoChatbubblesOutline } from 'svelte-icons-pack/io';
-	import { OiFileSubmodule24 } from 'svelte-icons-pack/oi';
+	// import { OiFileSubmodule24 } from 'svelte-icons-pack/oi';
 	import { RiDocumentTodoFill } from 'svelte-icons-pack/ri';
 	let { user, userAvatarURL } = $props();
 </script>
@@ -12,9 +12,9 @@
 	<a href={resolve("/chat")} class="asbolute left-1 flex items-center rounded bg-dm-light-primary p-1 text-2xl">
 		<Icon src={IoChatbubblesOutline} color="var(--color-dm-dark-secondary)" />
 	</a>
-	<a href={resolve("/files")} class="flex items-center rounded bg-dm-light-primary p-1 text-2xl">
+	<!-- <a href={resolve("/files")} class="flex items-center rounded bg-dm-light-primary p-1 text-2xl">
 		<Icon src={OiFileSubmodule24} color="var(--color-dm-dark-secondary)" />
-	</a>
+	</a> -->
 	<a href={resolve("/tasks")} class="flex items-center rounded bg-dm-light-primary p-1 text-2xl">
 		<Icon src={RiDocumentTodoFill} color="var(--color-dm-dark-secondary)" />
 	</a>

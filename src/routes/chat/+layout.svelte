@@ -3,22 +3,23 @@
 	import NiumiPanelInfo from '$lib/components/NiumiPanelInfo.svelte';
 	import ChatLeftPanel from '$lib/components/ChatLeftPanel.svelte';
 	import ChatSocket from '$lib/db/ChatSocket.js';
-	import { ChatsStore, messages, MessagesStore } from '$lib/stores/chat.store.js';
+	import { chats, ChatsStore, ChatStore, messages, MessagesStore } from '$lib/stores/chat.store.js';
 	import { onMount, type Snippet } from 'svelte';
 	import type { DBAttachment } from '$lib/db/db-raw-types.js';
 	import type { PageProps } from '../$types';
-	import ChatService from '$lib/db/ChatService';
+	import ChatService, { ChatsService } from '$lib/db/ChatService';
 	import { UserService } from '$lib/db/UserService';
 	// let author = $state<string>('Anónimo');
 	// let lastMessageId = $state<string>('');
 	interface Props extends PageProps {
+        children: Snippet<[]>
 		params: {
 			id: string;
-		},
-        children: Snippet<[]>
+		}
 	}
 
-	let { data, params, children }: Props = $props();
+
+	let { data, children,params }: Props = $props();
 	// const noMessageRegex = /^\{([^}]+)\}/;
 	// const regex = /^\{([^}]+)\}:(.+)$/;
 	
@@ -30,24 +31,18 @@
 	});
 
 	onMount(() => {
-		if ($messages) {
-			// const lastMessage = $messages.at(-1)!;
-			// lastMessageId = lastMessage.id;
-		}
 		const socket = new ChatSocket(data.supabase)
 		
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const messageConnection = socket.on<any>("message", async ({ data: message }) => {
-			const messagesStore = new MessagesStore(params.id)
+			const messagesStore = new MessagesStore()
 			console.log($messages, "SOCKET HABILITADO :D")
 			if (!loadedMessages) return;
 
-
-			
 			if (!$messages.some(msg => msg.id === message.id)) {
 
 				let author;
-				if (message.author_id == data.user.id) {
+				if (message.author_id === data.user.id) {
 					author = data.user;
 				} else {
 					const userService = new UserService(data.supabase)
@@ -57,6 +52,25 @@
 					console.log(author)
 				}
 
+				if (message.chat_id !== params.id) {
+					const chatStore = new ChatStore(message.chat_id)
+					chatStore.addUnreadedMessage()
+				}
+
+				const chatService = new ChatService(data.supabase, message.chat_id)
+		
+				await chatService.update({
+					lastMessageId: message.id,
+					lastMessageTimestamp: message.created_at
+				});
+
+				const chatStore = new ChatStore(message.chat_id)
+				
+				chatStore.changeLastMessage({ ...message, author })
+
+				const chatsStore = new ChatsStore()
+				chatsStore.order()
+
 				messagesStore.unshift({ 
 					id: message.id, 
 					content: message.content, 
@@ -64,18 +78,19 @@
 					author,
 					attachments: [],
 					pending: false,
-					chat_id: params.id
+					chat_id: message.chat_id
 				})
       			console.log('Database change received!')
 			}
+
 		})
 
 
 		const attachmentsConnection = socket.on<DBAttachment>("attachmentAdded", async ({ data: attachment }) => {
 			if (!loadedMessages) return;
 			if ($messages.some(msg => msg.id === attachment.message_id)) {
-				const messagesStore = new MessagesStore(params.id)
-				const messageFullData = await new ChatService(data.supabase, "0926ff19-a56c-4033-8ba9-7665a037069d").getMessage(attachment.message_id)
+				const messagesStore = new MessagesStore()
+				const messageFullData = await new ChatsService(data.supabase).getMessage(attachment.message_id)
 				console.log(messageFullData.error, messageFullData.data)
 				messagesStore.set($messages.findIndex(msg => msg.id == attachment.message_id), { 
 					attachments: [messageFullData.data!.attachments[0]]
@@ -86,10 +101,24 @@
 
 
 
-		const joinedChatConnection = socket.on<DBAttachment>('joinedChat', async () => {
+		const joinedChatConnection = socket.on<DBAttachment>('users_chats', async (e) => {
 			if (!loadedMessages) return;
 			const chatsStore = new ChatsStore()			
-			await chatsStore.load(data.supabase)
+
+			if ($chats.length === 0) {
+				await chatsStore.load(data.supabase)
+			} else {
+				await chatsStore.loadWithoutResetUnreadedMessages(data.supabase)
+			}
+
+			console.log("Oña?", params.id)
+		
+			console.log(e)
+
+
+
+
+
 		})
 
 		return () => {

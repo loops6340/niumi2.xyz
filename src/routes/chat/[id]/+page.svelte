@@ -5,7 +5,7 @@
 
 
 	import ChatInfoPanel from '$lib/components/ChatInfoPanel.svelte';
-	import { messages, MessagesStore } from '$lib/stores/chat.store.js';
+	import { ChatStore, messages, MessagesStore } from '$lib/stores/chat.store.js';
 	import type { PageProps } from '../$types';
 	import FilesList from '$lib/components/FilesList.svelte';
 	// let author = $state<string>('Anónimo');
@@ -18,104 +18,25 @@
 		}
 	}
 
-	let { data, form, params }: Props = $props();
-	// const noMessageRegex = /^\{([^}]+)\}/;
-	// const regex = /^\{([^}]+)\}:(.+)$/;
-	
-
-	// let loadedMessages = $state(false)
+	let { data, params }: Props = $props();
 
 	$effect(() => {
 		console.log("cargade ", params.id)
 		init()
+
 		// .then(() => loadedMessages = true)
 	});
 
-	// onMount(() => {
-	// 	if ($messages) {
-	// 		// const lastMessage = $messages.at(-1)!;
-	// 		// lastMessageId = lastMessage.id;
-	// 	}
-	// 	const socket = new ChatSocket(data.supabase)
-		
-	// 	const messageConnection = socket.on<Message>("message", async ({ data: message }) => {
-	// 		const messagesStore = new MessagesStore(Number(params.id))
-	// 		console.log($messages)
-	// 		if (!loadedMessages) return;
-	// 		if (!$messages.some(msg => msg.id === message.id)) {
-	// 			messagesStore.unshift({ 
-	// 				id: message.id, 
-	// 				content: message.content, 
-	// 				created_at: message.created_at, 
-	// 				user: data.user,
-	// 				attachments: [],
-	// 				pending: false,
-	// 				chat_id: Number(params.id)
-	// 			})
-    //   			console.log('Database change received!')
-	// 		}
-	// 	})
-
-
-	// 	const attachmentsConnection = socket.on<DBAttachment>("attachmentAdded", async ({ data: attachment }) => {
-	// 		if (!loadedMessages) return;
-	// 		if ($messages.some(msg => msg.id === attachment.message_id)) {
-	// 			const messagesStore = new MessagesStore(Number(params.id))
-	// 			const messageFullData = await new ChatService(data.supabase, 1).getMessage(attachment.message_id)
-	// 			console.log(messageFullData.error, messageFullData.data)
-	// 			messagesStore.set($messages.findIndex(msg => msg.id == attachment.message_id), { 
-	// 				attachments: [messageFullData.data!.attachments[0]]
-	// 			})
-    //   			console.log('Database attachment change received!')
-	// 		}
-	// 	})
-
-	// 	return () => {
-	// 		messageConnection.unsubscribe()
-	// 		attachmentsConnection.unsubscribe()
-	// 	}
-	// })
-
 	async function init() {
-		const messagesStore = new MessagesStore(params.id)
-		await messagesStore.load(data.supabase)
+		const messagesStore = new MessagesStore()
+		await messagesStore.load(data.supabase, params.id)
 		console.log("todos los mensajes cargan de nuevo")
+		const chatStore = new ChatStore(params.id)
+		await chatStore.viewMessages(data.supabase)
+		// const chatService = new ChatService(data.supabase, params.id)
+		// await chatService.readMessages()
+		// console.log("nya xd")
 	}
-	
-	// function parseMessages(messages: Message[]) {
-	// 	return messages.map((message) => {
-	// 		const isAnonymous = !message.content.startsWith('{') && !message.content.includes('}');
-
-	// 		if (isAnonymous) {
-	// 			message.author.username = undefined;
-
-	// 			// messages[i].author.username = undefined;
-	// 		} else {
-	// 			const authorName =
-	// 				message.content.match(regex)?.[1] || message.content.match(noMessageRegex)?.[1];
-	// 			message.author.username = authorName;
-	// 			message.content = message.content.slice(message.author!.username!.length + 4);
-	// 		}
-	// 		return message
-	// 	});
-	// }
-
-
-	// async function updateToPreviousMessages() {
-	// 	try {
-	// 		const data = await fetch(`/api/discord-chat?before=${lastMessageId}`);
-
-	// 		messages = parseMessages(await data.json());
-
-	// 		lastMessageId = messages[49].id;
-	// 	} catch {
-	// 		alert("Hubo un error, el máximo de tamaño de archivo subido es de 4.5 mb :'v");
-	// 	}
-	// }
-
-	// function changeMessagesLoadingState() {
-	// 	isMessagesLoading = !isMessagesLoading;
-	// }
 </script>
 
 
@@ -143,11 +64,11 @@
 							// {changeMessagesLoadingState}
 						/>
 					{/if}
-					{#if form?.error}
+					<!-- {#if form?.error}
 						<div class="flex items-center justify-center bg-red-500 p-2">
 							<p class="font-bold text-white">{form.description}</p>
 						</div>
-					{/if}
+					{/if} -->
 					<MessageSenderInput
 						supabase={data.supabase}
 						chatId={params.id}

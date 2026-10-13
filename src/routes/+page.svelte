@@ -4,7 +4,6 @@
   	import { Icon } from 'svelte-icons-pack';
   	import { AiFillGithub } from 'svelte-icons-pack/ai';
 	import { IoChatbubblesOutline } from 'svelte-icons-pack/io'
-	import { OiFileSubmodule24 } from 'svelte-icons-pack/oi'
 	import { RiDocumentTodoFill } from 'svelte-icons-pack/ri'
 
 	let {data} = $props()
@@ -36,7 +35,7 @@
 					</div>
 					<h2 class="mr-20 ml-2">/Chat</h2>
 				</a>
-				<a
+				<!-- <a
 					data-sveltekit-preload-data="tap"
 					href={resolve('/files')}
 					class="hover:bg-dm-light-primary hover:text-dm-dark-primary text-dm-light-primary bg-dm-dark-secondary flex items-center gap-2 rounded p-2 transition"
@@ -45,7 +44,7 @@
 						<Icon src={OiFileSubmodule24} color="var(--color-dm-dark-secondary)"/>
 					</div>
 					<h2 class="mr-20 ml-2">/Archivos</h2>
-				</a>
+				</a> -->
 				<a
 					href={resolve('/tasks')}
 					class="hover:bg-dm-light-primary hover:text-dm-dark-primary text-dm-light-primary bg-dm-dark-secondary flex items-center gap-2 rounded p-2 transition"

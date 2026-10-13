@@ -35,4 +35,5 @@ export interface Chat {
     members?: User[];
     last_message: Message;
     last_message_id: string;
+    unreaded_messages: number;
 }

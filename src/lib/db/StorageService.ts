@@ -1,5 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import path from 'node:path';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+//@ts-expect-error
+import path from 'path-browserify';
 
 export default class StorageService {
 	private supabaseClient: SupabaseClient;

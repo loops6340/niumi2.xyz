@@ -3,6 +3,8 @@
 	import { resolve } from '$app/paths';
 	import NiumiPanelInfo from '$lib/components/NiumiPanelInfo.svelte';
 	import LightButton from '$lib/components/UI/LightButton.svelte';
+	import { UserService } from '$lib/db/UserService.js';
+	import { onMount } from 'svelte';
 	import { Icon } from 'svelte-icons-pack';
 	import { RiSystemUpload2Fill } from 'svelte-icons-pack/ri';
 	let { data, form } = $props();
@@ -10,10 +12,26 @@
 	let avatar = $derived(data.user?.avatar_url);
 
 	const logout = async () => {
-		await fetch('/api/logout');
+		await data.supabase.auth.signOut()
 		await refreshAll()
 		goto(resolve("/"))
 	};
+
+	const submitAvatar = async (e: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement }) => {
+		e.preventDefault()
+		const userService = new UserService(data.supabase)
+		form = await userService.edit(new FormData(e.currentTarget).get("avatar") as File)
+		if (!form?.error) {
+			await goto(resolve("/"))
+			await refreshAll()		
+		}
+	}
+
+	let identificador = $state()
+	onMount(async () => {
+		identificador = (await data.supabase.auth.getUser()).data.user?.email?.split("@")[0]
+	})
+
 </script>
 
 <div class="flex h-screen w-screen">
@@ -23,7 +41,7 @@
 	<div
 		class="mt-auto mb-auto flex h-full flex-1 flex-col items-center gap-5 bg-[url(https://i.imgur.com/3N0gyAY.png)] bg-cover"
 	>
-		<form method="POST" action="?/edit"  enctype="multipart/form-data" class="my-auto flex flex-col items-center gap-8 rounded bg-dm-dark-primary p-7">
+		<form onsubmit={submitAvatar} method="POST" action="?/edit"  enctype="multipart/form-data" class="my-auto flex flex-col items-center gap-8 rounded bg-dm-dark-primary p-7">
 			<div class="flex gap-8">
 				<div class="flex flex-col gap-5">
 					<div class="flex flex-col gap-3">
@@ -33,9 +51,9 @@
 						</div>
 					</div>
 					<div class="flex flex-col gap-3">
-						<label for="name" class="text-dm-light-primary">Nose ke poner aki</label>
+						<label for="name" class="text-dm-light-primary">Identificador</label>
 						<div class="w-full min-w-55 rounded bg-dm-light-primary p-1 focus:outline-0">
-							<h2>ola</h2>
+							<h2>{identificador}</h2>
 						</div>
 					</div>
 				</div>

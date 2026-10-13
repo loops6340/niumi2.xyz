@@ -4,7 +4,7 @@ class ChatSocket {
 	constructor(supabaseClient: SupabaseClient) {
 		this.supabaseClient = supabaseClient;
 	}
-	on<T>(event: 'message' | 'attachmentAdded' | 'joinedChat', cb: (props: { data: T }) => void) {
+	on<T>(event: 'message' | 'attachmentAdded' | 'users_chats', cb: (props: { data: T }) => void) {
 		switch (event) {
 			case 'message': {
 				const channel = this.supabaseClient
@@ -17,6 +17,7 @@ class ChatSocket {
 							table: 'messages'
 						},
 						(payload) => {
+							console.log("MESSAGE_EVENT: ")
 							cb({ data: payload.new as T });
 						}
 					)
@@ -40,7 +41,7 @@ class ChatSocket {
 					.subscribe();
 				return channel;
 			}
-			case "joinedChat": {
+			case "users_chats": {
 				const channel = this.supabaseClient
 					.channel('joined-db-changes')
 					.on(

@@ -1,4 +1,7 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { AuthError, type SupabaseClient } from '@supabase/supabase-js';
+import { ChatsService } from './ChatService';
+import * as Validations from '$lib/validation';
+import StorageService from './StorageService';
 
 interface EditUserDataProps {
 	id: string;
@@ -9,8 +12,8 @@ interface EditUserDataProps {
 
 export class UserService {
 	async getUserByName(name: string) {
-		const { data, error } = await this.getProfilesTable().select("*").eq('name', name).single()
-		return { data, error }
+		const { data, error } = await this.getProfilesTable().select('*').eq('name', name).single();
+		return { data, error };
 	}
 	supabaseClient: SupabaseClient;
 	constructor(supabaseClient: SupabaseClient) {
@@ -18,7 +21,7 @@ export class UserService {
 	}
 
 	private getProfilesTable() {
- 		return this.supabaseClient.from("profiles")
+		return this.supabaseClient.from('profiles');
 	}
 
 	async editUserData(data: EditUserDataProps) {
@@ -33,29 +36,109 @@ export class UserService {
 		return { data, error };
 	}
 
-	async registerUser(name: string, password: string) {
-		const { error } = await this.supabaseClient.auth.signUp({
-            email: `${name.split(" ").join("-")}@niumi.xyz`,
-            password: password,
-            options: {
-            emailRedirectTo: 'https://example.com/welcome',
-          },
-        })
+	async register(name: string, identificator: string, password: string) {
 
-		const { error: profilesError } = await this.supabaseClient.from("profiles").insert({
-			name,
-        })
-		if (profilesError) console.log(profilesError)
+			const validation = Validations.validateRegistration({
+				identificator: identificator,
+				password
+			});
 
-		return { error }
+			if (validation instanceof Error) return { error: validation } 
+
+			const { error } = await this.supabaseClient.auth.signUp({
+				email: `${identificator.split(' ').join('-')}@niumi.xyz`,
+				password: password,
+				options: {
+					emailRedirectTo: 'https://example.com/welcome'
+				}
+			});
+
+			await this.supabaseClient.from('profiles').insert({
+				name
+			});
+
+			if (error) return { error: new Error('Una cuenta con este nombre ya existe') }
+
+			const chatsService = new ChatsService(this.supabaseClient);
+			await chatsService.joinToDMChat('d4f2a9c3-4e50-4b91-adbb-379bae5625cf');
 	}
 
-    async getUser(id: string) {
-        const query = this.getProfilesTable().select().eq("id", id);
+  async login(identificator?: string, password?: string | null) {
 
-		const { data, error } = await query
+		if (typeof identificator !== "string" || !identificator) {
+          return {
+			error: new AuthError("Pon un nombre :'v")
+          };
+        }
 
-        return { data: data?.[0], error: error } 
-    }
+        // Password validation
+        if (typeof password !== "string" || password.length < 6) {
+          return {
+			error: new AuthError("La contraseña debe tener al menos 6 caracteres :'v")
+          };
+        }
+
+         console.log(`${identificator.split(" ").join("")}@niumi.xyz`)
+         console.log(password)
+		 
+        const {error} = await this.supabaseClient.auth.signInWithPassword({
+          email: `${identificator.split(" ").join("")}@niumi.xyz`,
+          password: password
+        })
 	
+        if (error) {
+			console.log(error.toJSON())
+          return {
+            error: new AuthError("Credenciales inválidas")
+          };
+        }
+  }
+
+  async edit(avatar: File) {
+	
+    const storageService = new StorageService(this.supabaseClient)
+    const userService = new UserService(this.supabaseClient)
+
+         if (!avatar.name.includes("png") && !avatar.name.includes("jpg") && !avatar.name.includes("jpeg")) {
+          return {
+            error: new Error("Debes agregar una imagen")
+          }
+        }
+
+        if (avatar.size > 3000000) {
+          return {
+            error: new Error("El archivo es muy pesado (> 3mb)")
+          }
+        }
+
+        const { data, error } = await storageService.uploadAvatar(avatar)!
+
+        if (error) {
+          return {
+            error: new Error("Hubo un error al subir la imagen")
+          }
+        }
+
+        if (data == null) {
+          return {
+            success: false,
+            error: new Error("No se detectó alguna imagen")
+          }
+        }
+
+        const user = await this.supabaseClient.auth.getUser();
+
+        await userService.editUserData({
+          id: user.data.user!.id,
+          avatarURL: storageService.getPublicURL(data.path)
+        })
+  }
+
+	async getUser(id: string) {
+		const query = this.getProfilesTable().select().eq('id', id);
+
+		const { data, error } = await query;
+
+		return { data: data?.[0], error: error };
+	}
 }
