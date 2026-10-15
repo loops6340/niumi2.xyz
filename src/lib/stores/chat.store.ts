@@ -9,6 +9,70 @@ export const messages = writable<MessageState[]>([]);
 
 export const chats = writable<Chat[]>([]);
 
+type UIWindowsNames = 'chatsLeftSection' | 'chatSection' | 'chatRightPanel';
+
+export const UIWindowHierarchy = writable<
+	{
+		active: boolean;
+		name: UIWindowsNames;
+	}[]
+>([
+	{
+		name: 'chatsLeftSection',
+		active: true
+	},
+	{
+		name: 'chatSection',
+		active: false
+	},
+	{
+		name: 'chatRightPanel',
+		active: false
+	},
+]);
+
+export class UIWindowHierarchyStore {
+	static setShowFullPanel(name: UIWindowsNames) {
+		UIWindowHierarchy.update((windows) => {
+			console.log("xd")
+
+			return windows.map((window) => {
+				if (window.name === name) {
+					window.active = true;
+				} else {
+					window.active = false;
+				}
+				return window;
+			});
+		});
+	}
+	static setShowPreviousPanel(name: UIWindowsNames) {
+		switch (name) {
+			case 'chatSection':
+				this.setShowFullPanel('chatsLeftSection');
+				break;
+			case 'chatRightPanel':
+				this.setShowFullPanel('chatSection');
+		}
+	}
+	static getVisibility(
+		name: UIWindowsNames,
+		windows: {
+			active: boolean;
+			name: UIWindowsNames;
+		}[]
+	) {
+		return windows.find((w) => w.name === name)!.active;
+	}
+	static getVisibilityClasses(		name: UIWindowsNames,
+		windows: {
+			active: boolean;
+			name: UIWindowsNames;
+		}[]) {
+			return this.getVisibility(name, windows) ? "max-md:w-full " : "max-md:hidden"
+		}
+}
+
 export class MessagesStore {
 	unshift(value: MessageState) {
 		messages.update((messages) => [{ ...value, readed: false }, ...messages]);
@@ -79,8 +143,7 @@ export class ChatStore {
 }
 
 export class ChatsStore {
-
-		async load(supabase: SupabaseClient) {
+	async load(supabase: SupabaseClient) {
 		const chatsService = new ChatsService(supabase);
 		const { data, error } = await chatsService.getAll();
 
@@ -92,19 +155,16 @@ export class ChatsStore {
 			alert('sesión expirada');
 		}
 
-
 		if (!error) {
-	
-				for (const chat of data) {
-					if (!chat.name) {
-						chat.name = chat.members?.find((member) => member.id !== userData.user?.id)?.name || '';
-						chat.photo_url =
-							chat.members?.find((member) => member.id !== userData.user?.id)?.avatar_url || '';
-
-					}
+			for (const chat of data) {
+				if (!chat.name) {
+					chat.name = chat.members?.find((member) => member.id !== userData.user?.id)?.name || '';
+					chat.photo_url =
+						chat.members?.find((member) => member.id !== userData.user?.id)?.avatar_url || '';
 				}
+			}
 
-				chats.set(data)
+			chats.set(data);
 			this.order();
 		}
 	}
@@ -121,22 +181,19 @@ export class ChatsStore {
 			alert('sesión expirada');
 		}
 
-
 		if (!error) {
 			chats.update((chats) => {
-
 				for (const chat of data) {
 					if (!chat.name) {
 						chat.name = chat.members?.find((member) => member.id !== userData.user?.id)?.name || '';
 						chat.photo_url =
 							chat.members?.find((member) => member.id !== userData.user?.id)?.avatar_url || '';
-
 					}
-					const c = chats.find(c => chat.id === c.id)?.unreaded_messages
-					console.log("ac", c)
+					const c = chats.find((c) => chat.id === c.id)?.unreaded_messages;
+					console.log('ac', c);
 					if (c !== undefined) chat.unreaded_messages = c;
 				}
-				console.log("dc", data)
+				console.log('dc', data);
 				return data;
 			});
 			this.order();

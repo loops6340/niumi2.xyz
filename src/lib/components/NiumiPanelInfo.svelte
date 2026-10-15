@@ -8,7 +8,7 @@
 	let { user, userAvatarURL } = $props();
 </script>
 
-<div class="flex h-screen flex-col gap-2 border-r border-dm-light-primary bg-dm-dark-primary p-3">
+<div class="hidden md:flex h-screen flex-col gap-2 border-r border-dm-light-primary bg-dm-dark-primary p-3">
 	<a href={resolve("/chat")} class="asbolute left-1 flex items-center rounded bg-dm-light-primary p-1 text-2xl">
 		<Icon src={IoChatbubblesOutline} color="var(--color-dm-dark-secondary)" />
 	</a>

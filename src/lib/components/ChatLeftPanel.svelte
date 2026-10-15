@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { ChatsService } from '$lib/db/ChatService';
-	import { chats } from "$lib/stores/chat.store";
+	import { chats, UIWindowHierarchy, UIWindowHierarchyStore } from "$lib/stores/chat.store";
 	import type { SupabaseClient } from '@supabase/supabase-js';
 	import DarkInput from './UI/DarkInput.svelte';
 	import LightButton from './UI/LightButton.svelte';
@@ -47,15 +47,15 @@
 
 
 
-<div class="flex min-w-70 w-70 flex-col bg-dm-dark-primary">
+<div class={`flex min-w-70 w-70 flex-col bg-dm-dark-primary ${UIWindowHierarchyStore.getVisibilityClasses("chatsLeftSection", $UIWindowHierarchy)}`}>
 	<nav class="flex w-full items-center bg-dm-dark-primary p-2 px-5 text-dm-light-primary">
 		<div class="flex w-full items-center pt-1">
 			<a href={resolve('/')}>
-				<h1 class="text-3xl font-bold">Ñumi.xyz <span class="text-xl">/Chat</span></h1>
+				<h1 class="text-3xl font-bold w-full">Ñumi.xyz <span class="text-xl">/Chat</span></h1>
 			</a>
 		</div>
 	</nav>
-	<div class="flex flex-col gap-3 p-3">
+	<div class='flex flex-col gap-3 p-3'>
 		<DarkInput notRounded={false} value={searchValue} class="text-[18px]" type="text" placeholder="buscar / iniciar conversación" oninput={(e) => {
 				searchValue = e.currentTarget.value.toLowerCase()
 				typing = true
@@ -69,7 +69,9 @@
 			{@const date = chat.last_message ? Temporal.Instant.from(chat.last_message?.created_at).toZonedDateTimeISO(
 			Intl.DateTimeFormat().resolvedOptions().timeZone
 			) : undefined}
-			<button class="flex items-start gap-3 rounded hover:bg-dm-dark-secondary p-2 cursor-pointer" onclick={() => goto(resolve(`/chat/${chat.id}`))}>
+			<button class="flex items-start gap-3 rounded hover:bg-dm-dark-secondary p-2 cursor-pointer" onclick={() => 
+				goto(resolve(`/chat/${chat.id}`))
+				}>
 				<div class="h-10 min-h-10 w-10 min-w-10 rounded-full bg-dm-light-primary">
 					{#if chat.photo_url}
 						<img src={chat.photo_url} class="h-10 w-10 object-cover rounded-full"  alt="">
@@ -83,7 +85,7 @@
 						{/if}
 					</p>
 				</div>
-				<div class="flex gap-1 flex-col">
+				<div class="flex gap-1 flex-col ml-auto">
 					<div class="mb-auto text-dm-light-primary text-[12px]">
 						{#if date}
 							{('0' + date.hour).slice(0, 2)}:{('0' + date.minute).slice(0, 2)}{date.hour > 11 ? 'pm' : 'am'}
